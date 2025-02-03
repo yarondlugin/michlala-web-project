@@ -6,6 +6,7 @@ import { userModel, User } from '../models/users';
 import { generateTokens } from '../utils/auth';
 import { Token } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
+import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from '../utils/cookieOptions';
 
 export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
 	const { saltRounds } = appConfig;
@@ -37,13 +38,17 @@ export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, 
 };
 
 export const login = async (
-	request: Request<{}, {}, Pick<User, 'username' | 'password'>, {}>,
+	request: Request<{}, {}, Pick<User, 'username' | 'email' | 'password'>, {}>,
 	response: Response,
 	next: NextFunction
 ) => {
-	const { username, password } = request.body;
+	const { username: usernameOrEmail, password } = request.body;
+
 	try {
-		const user = await userModel.findOne({ username });
+		let user = await userModel.findOne({ username: usernameOrEmail });
+		if (!user) {
+			user = await userModel.findOne({ email: usernameOrEmail });
+		}
 
 		if (!user || !(await bcrypt.compare(password, user.password))) {
 			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
@@ -54,7 +59,11 @@ export const login = async (
 		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
 		await user.save();
 
-		response.status(httpStatus.OK).json({ accessToken, refreshToken });
+		response
+			.cookie('accessToken', accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+			.cookie('refreshToken', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+			.status(httpStatus.OK)
+			.send('Successfully logged in!');
 	} catch (error) {
 		next(error);
 	}
@@ -64,7 +73,7 @@ export const refresh = async (request: Request<{}, {}, { refreshToken: string },
 	const {
 		jwtOptions: { jwtSecret },
 	} = appConfig;
-	const { refreshToken } = request.body;
+	const { refreshToken } = request.cookies;
 
 	if (!refreshToken) {
 		response.status(httpStatus.BAD_REQUEST).json({ message: 'No token provided' });
@@ -74,13 +83,13 @@ export const refresh = async (request: Request<{}, {}, { refreshToken: string },
 	try {
 		const { userId, type } = jwt.verify(refreshToken, jwtSecret) as Token;
 		if (type !== 'refresh') {
-			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
+			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid token (wrong type)' });
 			return;
 		}
 
 		const user = await userModel.findById(userId, { refreshTokens: true });
 		if (!user || !user.refreshTokens?.includes(refreshToken)) {
-			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
+			response.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid token (doesn't appear in user refresh tokens)" });
 			return;
 		}
 		const { accessToken, refreshToken: newRefreshToken } = generateTokens(userId);
@@ -89,7 +98,11 @@ export const refresh = async (request: Request<{}, {}, { refreshToken: string },
 		user.refreshTokens.push(newRefreshToken);
 		await user.save();
 
-		response.status(httpStatus.OK).json({ accessToken, refreshToken: newRefreshToken });
+		response
+			.status(httpStatus.OK)
+			.cookie('accessToken', accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+			.cookie('refreshToken', newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+			.send('Token refreshed successfully!');
 	} catch (error) {
 		if (error instanceof jwt.TokenExpiredError) {
 			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Token expired' });
