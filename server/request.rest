@@ -1,0 +1,121 @@
+###
+
+POST http://localhost:8080/posts 
+Content-Type: application/json
+
+{
+"title": "The Shlomi post!", "sender": "shlomi", "content": "Posting is soooo much fun!!!"
+}
+
+###
+
+GET http://localhost:8080/posts
+
+###
+
+GET http://localhost:8080/posts?sender=stavby
+
+###
+
+GET http://localhost:8080/posts/6740aa79f7d3b27e1b049770
+
+###
+
+PUT http://localhost:8080/posts/6740aa79f7d3b27e1b049770
+Content-Type: application/json
+
+{
+"content": "Posting is soooo much fun!!!\nAlso I'm Stav!"
+}
+
+###
+
+POST http://localhost:8080/comments
+Content-Type: application/json
+
+{
+"sender": "yaron", "content": "hi! my first comment!", "postId": "6740bcfcaa86a22352cb55e1"
+}
+
+###
+
+GET http://localhost:8080/comments
+
+###
+
+GET http://localhost:8080/comments?sender=yaron
+
+###
+
+GET http://localhost:8080/comments?postId=6740bcfcaa86a22352cb55e1
+
+###
+
+GET http://localhost:8080/comments/6740bc6daa86a22352cb55dd
+
+###
+
+PUT http://localhost:8080/comments/6740bc6daa86a22352cb55dd
+Content-Type: application/json
+
+{
+"content": "maybe this is my second comment?"
+}
+
+###
+
+DELETE http://localhost:8080/comments/6740bc6daa86a22352cb55dd
+
+###
+
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+	"username": "shlomi", "password": "secretpassword123", "email": "shlomi@gmail.com"
+}
+
+###
+
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+	"username": "shlomi", "password": "secretpassword123"
+}
+
+###
+
+POST http://localhost:8080/auth/refresh
+Content-Type: application/json
+
+{
+	"refreshToken": "<refresh token>"
+}
+
+###
+
+GET http://localhost:8080/users?username=shlomi
+Authorization: bearer <access token>
+
+###
+
+GET http://localhost:8080/users?email=shlomi@gmail.com
+
+
+###
+
+GET http://localhost:8080/users?userId=676fe19ab96f197a6f3ec8d1
+
+###
+
+PUT http://localhost:8080/users/676fe19ab96f197a6f3ec8d1
+Content-Type: application/json
+
+{
+"email": "shlominew@gmail.com"
+}
+
+###
+
+DELETE http://localhost:8080/users/676fe19ab96f197a6f3ec8d1
