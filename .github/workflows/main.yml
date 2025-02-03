@@ -53,6 +53,9 @@ jobs:
               with:
                 node-version: '22'
 
+            - name: Navigate to Server
+              run: cd server
+
             - name: Install dependencies
               run: npm i
 
