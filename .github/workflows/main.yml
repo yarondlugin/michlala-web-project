@@ -53,14 +53,14 @@ jobs:
               with:
                 node-version: '22'
 
-            - name: Navigate to Server
-              run: cd server
-
             - name: Install dependencies
+              working-directory: ./server
               run: npm i
 
             - name: Run jest tests
+              working-directory: ./server
               run: npm test
 
             - name: Publish Test Summary Results
+              working-directory: ./server
               run: npx github-actions-ctrf ctrf/ctrf-report.json
