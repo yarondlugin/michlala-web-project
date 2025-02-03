@@ -1,0 +1,63 @@
+name: Server - Run unit tests
+
+on:
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    test:
+        env:
+            DB_URL: mongodb://APP-USERNAME:APP-PASSWORD@localhost:27017/APP-DB?authSource=APP-DB
+        runs-on: ubuntu-latest
+
+        services:
+            mongodb:
+                image: mongo:8.0.3
+                env:
+                    MONGO_INITDB_ROOT_USERNAME: admin
+                    MONGO_INITDB_ROOT_PASSWORD: admin
+                    MONGO_INITDB_DATABASE: APP-DATABASE
+                ports:
+                    - 27017:27017
+
+        steps:
+            - name: Install mongosh
+              run: |
+                sudo apt-get install gnupg
+                wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
+                echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+                sudo apt-get update
+                sudo apt-get install -y mongodb-mongosh
+                mongosh --version
+            
+            - name: Initialize MongoDB
+              run: |
+                mongosh --host localhost:27017 -u admin -p admin --authenticationDatabase admin <<EOF
+                db = db.getSiblingDB('APP-DB');
+                db.createUser({
+                    user: 'APP-USERNAME',
+                    pwd: 'APP-PASSWORD',
+                    roles: [{ role: 'readWrite', db: 'APP-DB' }]
+                });
+                db.createCollection('users');
+                db.createCollection('posts');
+                db.createCollection('comments');
+                EOF
+
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                node-version: '22'
+
+            - name: Install dependencies
+              run: npm i
+
+            - name: Run jest tests
+              run: npm test
+
+            - name: Publish Test Summary Results
+              run: npx github-actions-ctrf ctrf/ctrf-report.json
