@@ -42,6 +42,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(express@4.21.2)
     devDependencies:
+      '@jest/globals':
+        specifier: ^29.7.0
+        version: 29.7.0
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2

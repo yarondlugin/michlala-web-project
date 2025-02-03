@@ -73,7 +73,7 @@ export const refresh = async (request: Request<{}, {}, { refreshToken: string },
 	const {
 		jwtOptions: { jwtSecret },
 	} = appConfig;
-	const { refreshToken } = request.cookies;
+	const refreshToken = request.cookies.refreshToken || request.body.refreshToken;
 
 	if (!refreshToken) {
 		response.status(httpStatus.BAD_REQUEST).json({ message: 'No token provided' });
