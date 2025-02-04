@@ -12,12 +12,12 @@ const COOKIE_OPTIONS: CookieOptions = {
 	sameSite: 'none',
 };
 
-export const ACCESS_TOKEN_COOKIE_OPTIONS: CookieOptions = {
+export const getAccessTokenCookieOptions: () => CookieOptions = () => ({
 	...COOKIE_OPTIONS,
 	expires: getExpiryDate(accessTokenExpiration),
-};
+});
 
-export const REFRESH_TOKEN_COOKIE_OPTIONS: CookieOptions = {
+export const getRefreshTokenCookieOptions: () => CookieOptions = () => ({
 	...COOKIE_OPTIONS,
 	expires: getExpiryDate(refreshTokenExpiration),
-};
+});

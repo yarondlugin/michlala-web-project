@@ -6,7 +6,7 @@ import { userModel, User } from '../models/users';
 import { generateTokens } from '../utils/auth';
 import { Token } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
-import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from '../utils/cookieOptions';
+import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '../utils/cookieOptions';
 
 export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
 	const { saltRounds } = appConfig;
@@ -45,10 +45,9 @@ export const login = async (
 	const { username: usernameOrEmail, password } = request.body;
 
 	try {
-		let user = await userModel.findOne({ username: usernameOrEmail });
-		if (!user) {
-			user = await userModel.findOne({ email: usernameOrEmail });
-		}
+		const userByUsername = await userModel.findOne({ username: usernameOrEmail });
+		const userByEmail = !userByUsername && (await userModel.findOne({ email: usernameOrEmail }));
+		const user = userByUsername ?? userByEmail;
 
 		if (!user || !(await bcrypt.compare(password, user.password))) {
 			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
@@ -60,8 +59,8 @@ export const login = async (
 		await user.save();
 
 		response
-			.cookie('accessToken', accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
-			.cookie('refreshToken', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+			.cookie('accessToken', accessToken, getAccessTokenCookieOptions())
+			.cookie('refreshToken', refreshToken, getRefreshTokenCookieOptions())
 			.status(httpStatus.OK)
 			.send('Successfully logged in!');
 	} catch (error) {
@@ -83,13 +82,13 @@ export const refresh = async (request: Request<{}, {}, { refreshToken: string },
 	try {
 		const { userId, type } = jwt.verify(refreshToken, jwtSecret) as Token;
 		if (type !== 'refresh') {
-			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid token (wrong type)' });
+			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
 			return;
 		}
 
 		const user = await userModel.findById(userId, { refreshTokens: true });
 		if (!user || !user.refreshTokens?.includes(refreshToken)) {
-			response.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid token (doesn't appear in user refresh tokens)" });
+			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
 			return;
 		}
 		const { accessToken, refreshToken: newRefreshToken } = generateTokens(userId);
@@ -100,8 +99,8 @@ export const refresh = async (request: Request<{}, {}, { refreshToken: string },
 
 		response
 			.status(httpStatus.OK)
-			.cookie('accessToken', accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
-			.cookie('refreshToken', newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+			.cookie('accessToken', accessToken, getAccessTokenCookieOptions())
+			.cookie('refreshToken', newRefreshToken, getRefreshTokenCookieOptions())
 			.send('Token refreshed successfully!');
 	} catch (error) {
 		if (error instanceof jwt.TokenExpiredError) {

@@ -25,7 +25,7 @@ describe('Authentication API', () => {
 	});
 
 	describe('Positive Authentication Tests', () => {
-		it('should login a user', async () => {
+		it('should login a user with username', async () => {
 			const response = await request(app)
 				.post('/auth/login')
 				.send({
@@ -41,6 +41,21 @@ describe('Authentication API', () => {
 
 			accessToken = cookies.accessToken;
 			refreshToken = cookies.refreshToken;
+		});
+
+		it('should login a user with email', async () => {
+			const response = await request(app)
+				.post('/auth/login')
+				.send({
+					username: 'auth-test-user@gmail.com',
+					password: 'password',
+				})
+				.expect(httpStatus.OK);
+
+			const cookies = parseResponseCookies(response);
+
+			expect(cookies).toHaveProperty('accessToken');
+			expect(cookies).toHaveProperty('refreshToken');
 		});
 
 		it('should be able to access /posts with a valid token', async () => {

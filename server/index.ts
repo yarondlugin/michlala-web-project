@@ -1,19 +1,19 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
+import { readFileSync } from 'fs';
 import httpStatus from 'http-status';
-import { postsRouter } from './routes/posts';
-import { commentsRouter } from './routes/comments';
-import { usersRouter } from './routes/users';
-import { startDB } from './services/db';
+import https from 'https';
 import { authorize } from './middlewares/authorization';
 import { authenticationRouter } from './routes/authentication';
+import { commentsRouter } from './routes/comments';
+import { postsRouter } from './routes/posts';
+import { usersRouter } from './routes/users';
+import { startDB } from './services/db';
 import { swagger } from './swagger';
 import { appConfig } from './utils/appConfig';
-import cors from 'cors';
-import https from 'https';
-import { readFileSync } from 'fs';
-import cookieParser from 'cookie-parser';
 
 dotenv.config();
 const {
@@ -49,14 +49,14 @@ app.use('/posts', postsRouter);
 app.use('/comments', commentsRouter);
 app.use('/users', usersRouter);
 
-const runServer = () => {
-	console.log(`Server is running on port ${port}!`);
-};
-
-if (nodeEnv !== 'test') {
-	if (nodeEnv === 'localhost') {
-		https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, app).listen(port, runServer);
-	} else {
-		app.listen(port, runServer);
-	}
+const serverRunningCallback = () => console.log(`Server is running on port ${port}!`);
+switch (nodeEnv) {
+	case 'test':
+		break;
+	case 'localhost':
+		https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, app).listen(port, serverRunningCallback);
+		break;
+	default:
+		app.listen(port, serverRunningCallback);
+		break;
 }

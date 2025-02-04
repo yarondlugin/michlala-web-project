@@ -1,9 +1,9 @@
+import { createTheme, ThemeProvider } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CookiesProvider, useCookies } from 'react-cookie';
 import './App.css';
 import { IsAlive } from './components/IsAlive';
-import { CookiesProvider, useCookies } from 'react-cookie';
 import { Login } from './components/Login';
-import { createTheme, ThemeProvider } from '@mui/material';
 import { LogoutButton } from './components/LogoutButton';
 
 const darkTheme = createTheme({
@@ -15,7 +15,7 @@ const darkTheme = createTheme({
 const queryClient = new QueryClient();
 
 const App = () => {
-    const [{ accessToken, refreshToken: _refreshToken }, setCookie] = useCookies(['accessToken', 'refreshToken']);
+    const [{ accessToken }] = useCookies(['accessToken']);
 
     return (
         <ThemeProvider theme={darkTheme}>
