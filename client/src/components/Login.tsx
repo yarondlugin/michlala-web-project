@@ -1,13 +1,15 @@
 import { Box, Button, Card, Typography } from '@mui/material';
+import { useNavigate } from '@tanstack/react-router';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
+import { useCookies } from 'react-cookie';
 import { useEmailAndPassword } from '../hooks/UseEmailAndPassword';
 import { axiosClient } from '../queries/axios';
-import { useCookies } from 'react-cookie';
 
 export const Login = () => {
     const [errorMessage, setErrorMessage] = useState<string>();
-    const [cookies] = useCookies(['refreshToken']);
+    const [cookies] = useCookies(['refreshToken', 'accessToken']);
+    const navigate = useNavigate({ from: '/login' });
 
     const handleLogin = async () => {
         try {
@@ -26,11 +28,15 @@ export const Login = () => {
     const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
 
     useEffect(() => {
-        const { refreshToken } = cookies;
-        if (refreshToken) {
-            axiosClient.post('/auth/refresh', {}, { withCredentials: true });
+        const { accessToken, refreshToken } = cookies;
+        if (accessToken) {
+            navigate({ to: '/' });
         }
-    }, []);
+
+        if (refreshToken) {
+            axiosClient.post('/auth/refresh', {}, { withCredentials: true }).then(() => navigate({ to: '/' }));
+        }
+    }, [cookies]);
 
     return (
         <Card
@@ -47,9 +53,9 @@ export const Login = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center' }}>
                 {emailComponent}
                 {passwordComponent}
-                <Typography color='red'>{errorMessage}</Typography>
+                <Typography color="red">{errorMessage}</Typography>
             </Box>
-            <Button variant='contained' sx={{ width: '10%' }} onClick={handleLogin}>
+            <Button variant="contained" sx={{ width: '10%' }} onClick={handleLogin}>
                 Login
             </Button>
         </Card>
