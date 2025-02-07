@@ -8,7 +8,8 @@ export const authorize = (request: Request, response: Response, next: NextFuncti
 	const {
 		jwtOptions: { jwtSecret },
 	} = appConfig;
-	const token = (request.headers.authorization || (request.headers.Authorization as string))?.split(' ')[1];
+	const token =
+		(request.headers.authorization || (request.headers.Authorization as string))?.split(' ')[1] || request.cookies.accessToken;
 
 	if (!token) {
 		response.status(httpStatus.UNAUTHORIZED).json({ message: 'No token provided' });

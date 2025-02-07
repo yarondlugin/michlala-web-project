@@ -1,19 +1,27 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
+import { readFileSync } from 'fs';
 import httpStatus from 'http-status';
-import { postsRouter } from './routes/posts';
-import { commentsRouter } from './routes/comments';
-import { usersRouter } from './routes/users';
-import { startDB } from './services/db';
+import https from 'https';
 import { authorize } from './middlewares/authorization';
 import { authenticationRouter } from './routes/authentication';
+import { commentsRouter } from './routes/comments';
+import { postsRouter } from './routes/posts';
+import { usersRouter } from './routes/users';
+import { startDB } from './services/db';
 import { swagger } from './swagger';
 import { appConfig } from './utils/appConfig';
-import cors from 'cors';
 
 dotenv.config();
-const { port, nodeEnv, clientUrl } = appConfig;
+const {
+	port,
+	nodeEnv,
+	clientUrl,
+	ssl: { certPath, keyPath },
+} = appConfig;
 
 export const app = express();
 
@@ -21,9 +29,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
 	cors({
+		credentials: true,
 		origin: clientUrl,
 	})
 );
+app.use(cookieParser());
 
 startDB();
 
@@ -39,8 +49,14 @@ app.use('/posts', postsRouter);
 app.use('/comments', commentsRouter);
 app.use('/users', usersRouter);
 
-if (nodeEnv !== 'test') {
-	app.listen(port, () => {
-		console.log(`Server is running on port ${port}!`);
-	});
+const serverRunningCallback = () => console.log(`Server is running on port ${port}!`);
+switch (nodeEnv) {
+	case 'test':
+		break;
+	case 'localhost':
+		https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, app).listen(port, serverRunningCallback);
+		break;
+	default:
+		app.listen(port, serverRunningCallback);
+		break;
 }

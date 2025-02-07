@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 import { app } from '../index';
 import { closeDB } from '../services/db';
+import { parseResponseCookies } from './utils';
 
 afterAll(() => {
 	closeDB();
@@ -24,7 +25,7 @@ describe('Authentication API', () => {
 	});
 
 	describe('Positive Authentication Tests', () => {
-		it('should login a user', async () => {
+		it('should login a user with username', async () => {
 			const response = await request(app)
 				.post('/auth/login')
 				.send({
@@ -33,11 +34,28 @@ describe('Authentication API', () => {
 				})
 				.expect(httpStatus.OK);
 
-			expect(response.body).toHaveProperty('accessToken');
-			expect(response.body).toHaveProperty('refreshToken');
+			const cookies = parseResponseCookies(response);
 
-			accessToken = response.body.accessToken;
-			refreshToken = response.body.refreshToken;
+			expect(cookies).toHaveProperty('accessToken');
+			expect(cookies).toHaveProperty('refreshToken');
+
+			accessToken = cookies.accessToken;
+			refreshToken = cookies.refreshToken;
+		});
+
+		it('should login a user with email', async () => {
+			const response = await request(app)
+				.post('/auth/login')
+				.send({
+					username: 'auth-test-user@gmail.com',
+					password: 'password',
+				})
+				.expect(httpStatus.OK);
+
+			const cookies = parseResponseCookies(response);
+
+			expect(cookies).toHaveProperty('accessToken');
+			expect(cookies).toHaveProperty('refreshToken');
 		});
 
 		it('should be able to access /posts with a valid token', async () => {
@@ -49,14 +67,15 @@ describe('Authentication API', () => {
 		it('should refresh tokens', async () => {
 			const response = await request(app).post('/auth/refresh').send({ refreshToken }).expect(httpStatus.OK);
 
-			expect(response.body).toHaveProperty('accessToken');
-			expect(response.body).toHaveProperty('refreshToken');
-			expect(response.body.accessToken).not.toBe(accessToken);
-			expect(response.body.refreshToken).not.toBe(refreshToken);
+			const cookies = parseResponseCookies(response);
+			expect(cookies).toHaveProperty('accessToken');
+			expect(cookies).toHaveProperty('refreshToken');
+			expect(cookies.accessToken).not.toBe(accessToken);
+			expect(cookies.refreshToken).not.toBe(refreshToken);
 
-			accessToken = response.body.accessToken;
+			accessToken = cookies.accessToken;
 			oldRefreshToken = refreshToken;
-			refreshToken = response.body.refreshToken;
+			refreshToken = cookies.refreshToken;
 		});
 
 		it('should be able to access /posts with a valid token (after refresh)', async () => {

@@ -10,5 +10,9 @@ export const appConfig = {
 	},
 	dbURL: process.env.DB_URL || 'mongodb://localhost:27017/michlala',
 	saltRounds: Number(process.env.SALT_ROUNDS) || 10,
-	clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+	clientUrl: process.env.CLIENT_URL || 'https://localhost:5173',
+	ssl: {
+		keyPath: process.env.KEY_PATH || './localCerts/cert.key',
+		certPath: process.env.CERT_PATH || './localCerts/cert.pem',
+	},
 } as const;

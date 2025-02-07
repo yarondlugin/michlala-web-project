@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 import { app } from '../index';
+import { Response } from 'supertest';
 
 export const login = async (username: string, email: string) => {
 	await request(app).post('/auth/register').send({
@@ -16,7 +17,8 @@ export const login = async (username: string, email: string) => {
 			password: 'password',
 		})
 		.expect(httpStatus.OK);
-	const accessToken = loginResponse.body.accessToken;
+	const cookies = parseResponseCookies(loginResponse);
+	const accessToken = cookies.accessToken;
 
 	const userResponse = await request(app)
 		.get('/users')
@@ -27,3 +29,11 @@ export const login = async (username: string, email: string) => {
 
 	return { accessToken, userId };
 };
+
+export const parseResponseCookies = (response: Response) =>
+	((response.headers['set-cookie'] as unknown as string[]) || ([] as string[]))
+		.map((setCookie) => {
+			const [key, value] = setCookie.split(';')?.[0]?.split('=');
+			return { [key?.trim()]: value?.trim() };
+		})
+		.reduce((previous, current) => ({ ...previous, ...current }), {});
