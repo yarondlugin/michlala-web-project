@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
-import { useEmailAndPassword } from '../hooks/UseEmailAndPassword';
+import { useEmailAndPassword } from '../hooks/useEmailAndPassword';
 import { axiosClient } from '../queries/axios';
 
 export const Login = () => {
@@ -28,13 +28,9 @@ export const Login = () => {
     const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
 
     useEffect(() => {
-        const { accessToken, refreshToken } = cookies;
+        const { accessToken } = cookies;
         if (accessToken) {
             navigate({ to: '/' });
-        }
-
-        if (refreshToken) {
-            axiosClient.post('/auth/refresh', {}, { withCredentials: true }).then(() => navigate({ to: '/' }));
         }
     }, [cookies]);
 

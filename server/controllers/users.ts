@@ -30,7 +30,7 @@ export const getUserById = async (request: Request<{ id: string }, {}, {}, {}>, 
 	}
 
 	try {
-		const user = await userModel.findById(userId).select('-password');
+		const user = await userModel.findById(userId).select('-password -refreshTokens');
 
 		if (!user) {
 			response.status(httpStatus.NOT_FOUND).send(`User ${userId} not found`);
@@ -57,7 +57,7 @@ export const updateUserById = async (request: Request<{ id: string }>, response:
 	}
 
 	try {
-		const updatedUser = await userModel.findByIdAndUpdate({ _id: userId }, data).select('-password');
+		const updatedUser = await userModel.findByIdAndUpdate({ _id: userId }, data).select('-password -refreshTokens');
 
 		if (!updatedUser) {
 			response.status(httpStatus.NOT_FOUND).send(`User with id ${userId} not found`);
@@ -74,7 +74,7 @@ export const deleteUserById = async (request: Request<{ id: string }>, response:
 	const { id: userId } = request.params;
 
 	try {
-		const deletedUser = await userModel.findByIdAndDelete({ _id: userId }).select('-password');
+		const deletedUser = await userModel.findByIdAndDelete({ _id: userId }).select('-password -refreshTokens');
 		if (deletedUser === null) {
 			response.status(httpStatus.NOT_FOUND).send(`User with id ${userId} not found`);
 			return;
