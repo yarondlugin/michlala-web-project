@@ -1,6 +1,11 @@
 import { InferRawDocType, Schema, model } from 'mongoose';
 import { TypeWithId } from '../utils/types';
 
+export enum userTypes {
+	PASSWORD = 'PASSWORD',
+	GOOGLE = 'GOOGLE',
+};
+
 const userSchemaDefinition = {
 	username: {
 		type: String,
@@ -13,6 +18,12 @@ const userSchemaDefinition = {
 		required: true,
 		unique: true,
 		allowFilter: true,
+	},
+	type: {
+		type: String,
+		required: true,
+		default: userTypes.PASSWORD,
+		allowFilter: false
 	},
 	password: {
 		type: String,
