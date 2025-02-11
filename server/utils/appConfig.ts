@@ -15,4 +15,8 @@ export const appConfig = {
 		keyPath: process.env.KEY_PATH || './localCerts/cert.key',
 		certPath: process.env.CERT_PATH || './localCerts/cert.pem',
 	},
+	googleClient: {
+		id: process.env.GOOGLE_CLIENT_ID || 'googleclientid',
+		secret: process.env.GOOGLE_CLIENT_SECRET || 'googleclientsecret',
+	}
 } as const;
