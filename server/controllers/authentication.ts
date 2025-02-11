@@ -2,11 +2,19 @@ import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
-import { userModel, User } from '../models/users';
+import axios from 'axios';
+import { userModel, User, userTypes } from '../models/users';
 import { generateTokens } from '../utils/auth';
 import { Token } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '../utils/cookieOptions';
+import { googleOAuthClient } from '../services/googleOAuth';
+
+interface GoogleUserInfoResponse {
+	email: string;
+	name: string;
+	email_verified: boolean
+}
 
 export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
 	const { saltRounds } = appConfig;
@@ -37,26 +45,71 @@ export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, 
 	}
 };
 
-export const login = async (
+export const loginPassword = async (
 	request: Request<{}, {}, Pick<User, 'username' | 'email' | 'password'>, {}>,
 	response: Response,
 	next: NextFunction
 ) => {
 	const { username: usernameOrEmail, password } = request.body;
+	console.log('Logging in with Password');
 
 	try {
-		const userByUsername = await userModel.findOne({ username: usernameOrEmail });
+		const userByUsername = await userModel.findOne({ username: usernameOrEmail, type: userTypes.PASSWORD });
 		const userByEmail = !userByUsername && (await userModel.findOne({ email: usernameOrEmail }));
 		const user = userByUsername ?? userByEmail;
 
 		if (!user || !(await bcrypt.compare(password, user.password))) {
 			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
+			console.log(`User ${usernameOrEmail} failed to login with Password`);
 			return;
 		}
 
 		const { accessToken, refreshToken } = generateTokens(user._id.toString());
 		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
 		await user.save();
+
+		console.log(`User ${user.username} logged in with Password`);
+
+		response
+			.cookie('accessToken', accessToken, getAccessTokenCookieOptions())
+			.cookie('refreshToken', refreshToken, getRefreshTokenCookieOptions())
+			.status(httpStatus.OK)
+			.send('Successfully logged in!');
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>, response: Response, next: NextFunction) => {
+	const { code } = request.body;
+	console.log('Logging in with Google');
+
+	try {
+		const {
+			tokens: { access_token },
+		} = await googleOAuthClient.getToken(code);
+
+		const { data: userInfo } = await axios.get<GoogleUserInfoResponse>('https://www.googleapis.com/oauth2/v3/userinfo', {
+			headers: { Authorization: `Bearer ${access_token}` },
+		});
+
+		const { email, name, email_verified } = userInfo;
+		const username = name.replace(' ', '-');
+
+		if (!email_verified || !email) {
+			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Unable to login via Google' });
+			console.log(`User ${username} failed to login with Google`);
+			return;
+		}
+		
+		const existingUser = await userModel.findOne({ email, type: userTypes.GOOGLE });
+		const user = existingUser ?? (await userModel.create({ username, email, password: username, type: userTypes.GOOGLE }));
+
+		const { accessToken, refreshToken } = generateTokens(user._id.toString());
+		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
+		await user.save();
+
+		console.log(`User ${user.username} logged in with Google`);
 
 		response
 			.cookie('accessToken', accessToken, getAccessTokenCookieOptions())
