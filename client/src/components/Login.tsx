@@ -5,15 +5,20 @@ import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { useEmailAndPassword } from '../hooks/UseEmailAndPassword';
 import { axiosClient } from '../queries/axios';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export const Login = () => {
     const [errorMessage, setErrorMessage] = useState<string>();
     const [cookies] = useCookies(['refreshToken', 'accessToken']);
     const navigate = useNavigate({ from: '/login' });
 
-    const handleLogin = async () => {
+    const handleLogin = async (googleAuthCode?: string) => {
         try {
-            await axiosClient.post('/auth/login', { username: email, password }, { withCredentials: true });
+			if (googleAuthCode) {
+				await axiosClient.post('/auth/login/google', { code: googleAuthCode }, { withCredentials: true });
+			} else {
+				await axiosClient.post('/auth/login', { username: email, password }, { withCredentials: true });
+			}
         } catch (error) {
             if (isAxiosError(error)) {
                 const errorFromServer = error.response?.data?.message;
@@ -26,6 +31,11 @@ export const Login = () => {
         }
     };
     const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
+
+	const login = useGoogleLogin({
+        onSuccess: async ({ code }) => handleLogin(code),
+		flow: 'auth-code',
+    });
 
     useEffect(() => {
         const { accessToken, refreshToken } = cookies;
@@ -55,9 +65,10 @@ export const Login = () => {
                 {passwordComponent}
                 <Typography color="red">{errorMessage}</Typography>
             </Box>
-            <Button variant="contained" sx={{ width: '10%' }} onClick={handleLogin}>
+            <Button variant="contained" sx={{ width: '10%' }} onClick={() => handleLogin()}>
                 Login
             </Button>
+            <Button onClick={() => login()}>Sign in with Google</Button>
         </Card>
     );
 };
