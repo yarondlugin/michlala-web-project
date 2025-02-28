@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { isValidObjectId } from 'mongoose';
-import { User, userAllowedFilters, userModel } from '../models/users';
+import { User, userAllowedFilters, userModel, userTypes } from '../models/users';
 
 export const getUserByDetails = async (request: Request<{}, {}, {}, Partial<User>>, response: Response, next: NextFunction) => {
 	const filters = Object.entries(request.query)
@@ -84,3 +84,25 @@ export const deleteUserById = async (request: Request<{ id: string }>, response:
 		next(error);
 	}
 };
+
+export const convertUserToGoogle = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
+	const { id: userId } = request.params;
+	
+	if (!isValidObjectId(userId)) {
+		response.status(httpStatus.BAD_REQUEST).send(`Invalid id ${userId}`);
+		return;
+	}
+
+	try {
+		const updatedUser = await userModel.findByIdAndUpdate({ _id: userId }, { type: userTypes.GOOGLE }).select('-password');
+		
+		if (!updatedUser) {
+			response.status(httpStatus.NOT_FOUND).send(`User with id ${userId} not found`);
+			return;
+		}
+
+		response.status(httpStatus.OK).send(`User ${userId} converted to Google account`);
+	} catch (error) {
+		next(error);
+	}
+}

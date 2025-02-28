@@ -101,8 +101,14 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 			return;
 		}
 		
-		const existingUser = await userModel.findOne({ email, type: userTypes.GOOGLE });
-		const user = existingUser ?? (await userModel.create({ username: email, email, password: email, type: userTypes.GOOGLE }));
+		const existingUsers = await userModel.find({ email });
+		if (existingUsers.find((user) => user.type === userTypes.PASSWORD)) {
+			response.status(httpStatus.CONFLICT).json({ message: 'User already exists with this email, convert to Google account or login with password' });
+			console.log(`User ${email} failed to login with Google - existing user with password`);
+			return;
+		}
+
+		const user = existingUsers.find((user) => user.type === userTypes.GOOGLE) ?? (await userModel.create({ username: email, email, password: email, type: userTypes.GOOGLE }));
 
 		const { accessToken, refreshToken } = generateTokens(user._id.toString());
 		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
