@@ -15,9 +15,9 @@ export const Login = () => {
     const handleLogin = async (googleAuthCode?: string) => {
         try {
 			if (googleAuthCode) {
-				await axiosClient.post('/auth/login/google', { code: googleAuthCode }, { withCredentials: true });
+				await axiosClient.post('/auth/login/google', { code: googleAuthCode });
 			} else {
-				await axiosClient.post('/auth/login', { username: email, password }, { withCredentials: true });
+				await axiosClient.post('/auth/login', { username: email, password });
 			}
         } catch (error) {
             if (isAxiosError(error)) {
@@ -32,7 +32,7 @@ export const Login = () => {
     };
     const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
 
-	const login = useGoogleLogin({
+	const handleGoogleLogin = useGoogleLogin({
         onSuccess: async ({ code }) => handleLogin(code),
 		flow: 'auth-code',
     });
@@ -68,7 +68,7 @@ export const Login = () => {
             <Button variant="contained" sx={{ width: '10%' }} onClick={() => handleLogin()}>
                 Login
             </Button>
-            <Button onClick={() => login()}>Sign in with Google</Button>
+            <Button onClick={() => handleGoogleLogin()}>Sign in with Google</Button>
         </Card>
     );
 };

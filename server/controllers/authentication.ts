@@ -93,17 +93,16 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 			headers: { Authorization: `Bearer ${access_token}` },
 		});
 
-		const { email, name, email_verified } = userInfo;
-		const username = name.replace(' ', '-');
+		const { email, email_verified } = userInfo;
 
 		if (!email_verified || !email) {
 			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Unable to login via Google' });
-			console.log(`User ${username} failed to login with Google`);
+			console.log(`User ${email} failed to login with Google`);
 			return;
 		}
 		
 		const existingUser = await userModel.findOne({ email, type: userTypes.GOOGLE });
-		const user = existingUser ?? (await userModel.create({ username, email, password: username, type: userTypes.GOOGLE }));
+		const user = existingUser ?? (await userModel.create({ username: email, email, password: email, type: userTypes.GOOGLE }));
 
 		const { accessToken, refreshToken } = generateTokens(user._id.toString());
 		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
