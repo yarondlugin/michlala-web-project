@@ -48,13 +48,9 @@ export const Login = () => {
     });
 
     useEffect(() => {
-        const { accessToken, refreshToken } = cookies;
+        const { accessToken } = cookies;
         if (accessToken) {
             navigate({ to: '/' });
-        }
-
-        if (refreshToken) {
-            axiosClient.post('/auth/refresh', {}, { withCredentials: true }).then(() => navigate({ to: '/' }));
         }
     }, [cookies]);
 

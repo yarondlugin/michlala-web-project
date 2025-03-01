@@ -1,19 +1,10 @@
-import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import { useCookies } from 'react-cookie';
+import { createLazyFileRoute } from '@tanstack/react-router';
 import { IsAlive } from '../components/IsAlive';
 import { LogoutButton } from '../components/LogoutButton';
+import { useRestrictedPage } from '../hooks/useRestrictedPage';
 
 const Index = () => {
-    const [cookies] = useCookies(['accessToken']);
-    const navigate = useNavigate({ from: '/' });
-
-    useEffect(() => {
-        const { accessToken } = cookies;
-        if (!accessToken) {
-            navigate({ to: '/login' });
-        }
-    }, [cookies]);
+    useRestrictedPage();
 
     return (
         <>

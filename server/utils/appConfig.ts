@@ -12,8 +12,8 @@ export const appConfig = {
 	saltRounds: Number(process.env.SALT_ROUNDS) || 10,
 	clientUrl: process.env.CLIENT_URL || 'https://localhost:5173',
 	ssl: {
-		keyPath: process.env.KEY_PATH || './localCerts/cert.key',
-		certPath: process.env.CERT_PATH || './localCerts/cert.pem',
+		keyPath: process.env.KEY_PATH || './localCerts/local.key',
+		certPath: process.env.CERT_PATH || './localCerts/local.crt',
 	},
 	googleClient: {
 		id: process.env.GOOGLE_CLIENT_ID || 'googleclientid',
