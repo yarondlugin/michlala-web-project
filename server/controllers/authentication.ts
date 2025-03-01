@@ -8,13 +8,7 @@ import { generateTokens } from '../utils/auth';
 import { Token } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '../utils/cookieOptions';
-import { googleOAuthClient } from '../services/googleOAuth';
-
-interface GoogleUserInfoResponse {
-	email: string;
-	name: string;
-	email_verified: boolean
-}
+import { googleOAuthClient, GoogleUserInfoResponse } from '../services/googleOAuth';
 
 export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
 	const { saltRounds } = appConfig;
@@ -102,7 +96,7 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 		}
 		
 		const existingUsers = await userModel.find({ email });
-		if (existingUsers.find((user) => user.type === userTypes.PASSWORD)) {
+		if (existingUsers.some((user) => user.type === userTypes.PASSWORD)) {
 			response.status(httpStatus.CONFLICT).json({ message: 'User already exists with this email, convert to Google account or login with password' });
 			console.log(`User ${email} failed to login with Google - existing user with password`);
 			return;

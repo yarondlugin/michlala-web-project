@@ -101,20 +101,20 @@ usersRouter.use(createErrorHandler('users'));
  *         description: User deleted successfully
  *       400:
  *         description: Bad Request (Invalid ID)
- * 	post:
- *    summary: Convert a user to Google
- *	  tags:
- * 	    - Users
- *    parameters:
- *      - name: id
- *        in: path
- *        required: true
- *    schema:
- *      type: string
- *    description: The ID of the user to convert
- *    responses:
- *	    200:
- *	      description: User converted successfully
- *	    400:
- *	      description: Bad Request (Invalid ID)
+ *   post:
+ *     summary: Convert a user to Google
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user to convert
+ *     responses:
+ *       200:
+ *         description: User converted successfully
+ *       400:
+ *         description: Bad Request (Invalid ID)
  */
