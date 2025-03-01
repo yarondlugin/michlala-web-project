@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
 import axios from 'axios';
+import { HydratedDocument } from 'mongoose';
 import { userModel, User, userTypes } from '../models/users';
 import { generateTokens } from '../utils/auth';
 import { Token } from '../utils/types';
@@ -39,6 +40,13 @@ export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, 
 	}
 };
 
+const createUserTokens = async (user: HydratedDocument<User>) => {
+	const { accessToken, refreshToken } = generateTokens(user._id.toString());
+	user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
+	await user.save();
+	return { accessToken, refreshToken };
+};
+
 export const loginPassword = async (
 	request: Request<{}, {}, Pick<User, 'username' | 'email' | 'password'>, {}>,
 	response: Response,
@@ -48,8 +56,8 @@ export const loginPassword = async (
 	console.log('Logging in with Password');
 
 	try {
-		const userByUsername = await userModel.findOne({ username: usernameOrEmail, type: userTypes.PASSWORD });
-		const userByEmail = !userByUsername && (await userModel.findOne({ email: usernameOrEmail }));
+		const userByUsername = await userModel.findOne<HydratedDocument<User>>({ username: usernameOrEmail, type: userTypes.PASSWORD });
+		const userByEmail = !userByUsername && (await userModel.findOne<HydratedDocument<User>>({ email: usernameOrEmail }));
 		const user = userByUsername ?? userByEmail;
 
 		if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -58,9 +66,7 @@ export const loginPassword = async (
 			return;
 		}
 
-		const { accessToken, refreshToken } = generateTokens(user._id.toString());
-		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
-		await user.save();
+		const { accessToken, refreshToken } = await createUserTokens(user);
 
 		console.log(`User ${user.username} logged in with Password`);
 
@@ -94,19 +100,21 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 			console.log(`User ${email} failed to login with Google`);
 			return;
 		}
-		
+
 		const existingUsers = await userModel.find({ email });
 		if (existingUsers.some((user) => user.type === userTypes.PASSWORD)) {
-			response.status(httpStatus.CONFLICT).json({ message: 'User already exists with this email, convert to Google account or login with password', email });
+			response
+				.status(httpStatus.CONFLICT)
+				.json({ message: 'User already exists with this email, convert to Google account or login with password', email });
 			console.log(`User ${email} failed to login with Google - existing user with password`);
 			return;
 		}
 
-		const user = existingUsers.find((user) => user.type === userTypes.GOOGLE) ?? (await userModel.create({ username: email, email, password: email, type: userTypes.GOOGLE }));
+		const user: HydratedDocument<User> =
+			existingUsers.find((user) => user.type === userTypes.GOOGLE) ??
+			(await userModel.create<User>({ username: email, email, password: email, type: userTypes.GOOGLE, refreshTokens: [] }));
 
-		const { accessToken, refreshToken } = generateTokens(user._id.toString());
-		user.refreshTokens = [...(user.refreshTokens || []), refreshToken];
-		await user.save();
+		const { accessToken, refreshToken } = await createUserTokens(user);
 
 		console.log(`User ${user.username} logged in with Google`);
 

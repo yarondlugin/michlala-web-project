@@ -1,3 +1,4 @@
+import GoogleIcon from '@mui/icons-material/Google';
 import { Box, Button, Card, Typography } from '@mui/material';
 import { useNavigate } from '@tanstack/react-router';
 import { HttpStatusCode, isAxiosError } from 'axios';
@@ -83,7 +84,7 @@ export const Login = () => {
             <Button variant="contained" sx={{ width: '10%' }} onClick={() => handleLogin()}>
                 Login
             </Button>
-            <Button onClick={() => handleGoogleLogin()}>Sign in with Google</Button>
+            <Button onClick={() => handleGoogleLogin()} endIcon={<GoogleIcon />}>Sign in with Google</Button>
             <Dialog.Root open={dialogOpen}>{dialogComponent}</Dialog.Root>
         </Card>
     );
