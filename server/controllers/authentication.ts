@@ -83,7 +83,7 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 			tokens: { access_token },
 		} = await googleOAuthClient.getToken(code);
 
-		const { data: userInfo } = await axios.get<GoogleUserInfoResponse>('https://www.googleapis.com/oauth2/v3/userinfo', {
+		const { data: userInfo } = await axios.get<GoogleUserInfoResponse>(appConfig.googleClient.userInfoApi, {
 			headers: { Authorization: `Bearer ${access_token}` },
 		});
 
@@ -97,7 +97,7 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 		
 		const existingUsers = await userModel.find({ email });
 		if (existingUsers.some((user) => user.type === userTypes.PASSWORD)) {
-			response.status(httpStatus.CONFLICT).json({ message: 'User already exists with this email, convert to Google account or login with password' });
+			response.status(httpStatus.CONFLICT).json({ message: 'User already exists with this email, convert to Google account or login with password', email });
 			console.log(`User ${email} failed to login with Google - existing user with password`);
 			return;
 		}

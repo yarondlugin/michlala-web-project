@@ -1,27 +1,37 @@
 import { Box, Button, Card, Typography } from '@mui/material';
 import { useNavigate } from '@tanstack/react-router';
-import { isAxiosError } from 'axios';
+import { HttpStatusCode, isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
+import { useGoogleLogin } from '@react-oauth/google';
+import { Dialog } from '@base-ui-components/react';
 import { useEmailAndPassword } from '../hooks/UseEmailAndPassword';
 import { axiosClient } from '../queries/axios';
-import { useGoogleLogin } from '@react-oauth/google';
+import { useDialog } from '../hooks/useDialog';
 
 export const Login = () => {
     const [errorMessage, setErrorMessage] = useState<string>();
     const [cookies] = useCookies(['refreshToken', 'accessToken']);
     const navigate = useNavigate({ from: '/login' });
+    const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
     const handleLogin = async (googleAuthCode?: string) => {
+        await setErrorMessage('');
         try {
-			if (googleAuthCode) {
-				await axiosClient.post('/auth/login/google', { code: googleAuthCode });
-			} else {
-				await axiosClient.post('/auth/login', { username: email, password });
-			}
+            if (googleAuthCode) {
+                await axiosClient.post('/auth/login/google', { code: googleAuthCode });
+            } else {
+                await axiosClient.post('/auth/login', { username: email, password });
+            }
         } catch (error) {
             if (isAxiosError(error)) {
                 const errorFromServer = error.response?.data?.message;
+                if (error.response?.status === HttpStatusCode.Conflict) {
+                    await setDialogOpen(true);
+                    await setEmail(error.response?.data?.email);
+                    return;
+                }
+
                 if (errorFromServer) {
                     setErrorMessage(errorFromServer);
                     return;
@@ -30,11 +40,11 @@ export const Login = () => {
             setErrorMessage('Something went wrong, please try again');
         }
     };
-    const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
+    const { email, setEmail, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
 
-	const handleGoogleLogin = useGoogleLogin({
+    const handleGoogleLogin = useGoogleLogin({
         onSuccess: async ({ code }) => handleLogin(code),
-		flow: 'auth-code',
+        flow: 'auth-code',
     });
 
     useEffect(() => {
@@ -47,6 +57,15 @@ export const Login = () => {
             axiosClient.post('/auth/refresh', {}, { withCredentials: true }).then(() => navigate({ to: '/' }));
         }
     }, [cookies]);
+
+    const { dialogComponent } = useDialog({
+        title: 'User Exists With This Email',
+        description: `A user using this email and a password already exists.
+			If you wish to convert your user to a Google account,
+			please log in with your password and convert from your profile page.`,
+        cancelText: 'Ok, log in with password',
+        onCancel: () => setDialogOpen(false),
+    });
 
     return (
         <Card
@@ -69,6 +88,7 @@ export const Login = () => {
                 Login
             </Button>
             <Button onClick={() => handleGoogleLogin()}>Sign in with Google</Button>
+            <Dialog.Root open={dialogOpen}>{dialogComponent}</Dialog.Root>
         </Card>
     );
 };
