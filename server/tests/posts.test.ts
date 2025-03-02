@@ -48,7 +48,7 @@ describe('Posts API', () => {
 
 			expect(Array.isArray(response.body)).toBe(true);
 			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.find(({ _id, sender }: Post) => _id === postId && sender === userId)).toBeDefined();
+			expect(response.body.find(({ _id, sender }: Post) => _id.toString() === postId && sender === userId)).toBeDefined();
 		});
 
 		it('should get a post by id', async () => {
