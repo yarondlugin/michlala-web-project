@@ -10,7 +10,7 @@ type ProfileFieldParams = {
 };
 
 export const ProfileField = ({ isEditable, title, widthPercentage, value, handleChange }: ProfileFieldParams) => (
-    <Box display={'flex'} flexDirection={'row'} alignItems={'center'} width={'100%'} marginBottom={'3%'}>
+    <Box display={'flex'} flexDirection={'row'} justifyContent={'center'} width={'100%'} marginBottom={'3%'}>
         <Typography width={'5%'} marginRight={'10%'}>
             {title}
         </Typography>

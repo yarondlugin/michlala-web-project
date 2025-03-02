@@ -6,15 +6,14 @@ import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Dialog } from '@base-ui-components/react';
-import { useEmailAndPassword } from '../hooks/UseEmailAndPassword';
-import { axiosClient } from '../queries/axios';
-import { useDialog } from '../hooks/useDialog';
+import { useEmailAndPassword } from '../../hooks/UseEmailAndPassword';
+import { axiosClient } from '../../queries/axios';
+import { useDialog } from '../../hooks/useDialog';
 
-export const Login = () => {
+export const LoginPage = () => {
     const [errorMessage, setErrorMessage] = useState<string>();
     const [cookies] = useCookies(['refreshToken', 'accessToken']);
     const navigate = useNavigate({ from: '/login' });
-    const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
     const handleLogin = async (googleAuthCode?: string) => {
         await setErrorMessage('');
@@ -51,17 +50,16 @@ export const Login = () => {
     useEffect(() => {
         const { accessToken } = cookies;
         if (accessToken) {
-            navigate({ to: '/' });
+            navigate({ to: '/myProfile' });
         }
     }, [cookies]);
 
-    const { dialogComponent } = useDialog({
+    const { dialogComponent, dialogOpen, setDialogOpen } = useDialog({
         title: 'User Exists With This Email',
         description: `A user using this email and a password already exists.
 			If you wish to convert your user to a Google account,
 			please log in with your password and convert from your profile page.`,
         cancelText: 'Ok, log in with password',
-        onCancel: () => setDialogOpen(false),
     });
 
     return (
@@ -84,7 +82,9 @@ export const Login = () => {
             <Button variant="contained" sx={{ width: '10%' }} onClick={() => handleLogin()}>
                 Login
             </Button>
-            <Button onClick={() => handleGoogleLogin()} endIcon={<GoogleIcon />}>Sign in with Google</Button>
+            <Button onClick={() => handleGoogleLogin()} endIcon={<GoogleIcon />}>
+                Sign in with Google
+            </Button>
             <Dialog.Root open={dialogOpen}>{dialogComponent}</Dialog.Root>
         </Card>
     );

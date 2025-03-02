@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchIsAlive } from '../queries/isAlive';
+import { fetchIsAlive } from '../../queries/isAlive';
 
 export const IsAlive = () => {
     const { isLoading, data } = useQuery({ queryKey: ['isAlive'], queryFn: fetchIsAlive });
