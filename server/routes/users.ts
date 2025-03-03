@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserByDetails, getUserById, updateUserById, deleteUserById, convertUserToGoogle } from '../controllers/users';
+import { getUserByDetails, getUserById, updateUserById, deleteUserById } from '../controllers/users';
 import { createErrorHandler } from '../utils/createErrorHandler';
 
 export const usersRouter = express.Router();
@@ -7,7 +7,6 @@ export const usersRouter = express.Router();
 usersRouter.get('/', getUserByDetails);
 usersRouter.get('/:id', getUserById);
 usersRouter.put('/:id', updateUserById);
-usersRouter.post('/:id/convertToGoogle', convertUserToGoogle);
 usersRouter.delete('/:id', deleteUserById);
 usersRouter.use(createErrorHandler('users'));
 
@@ -99,22 +98,6 @@ usersRouter.use(createErrorHandler('users'));
  *     responses:
  *       200:
  *         description: User deleted successfully
- *       400:
- *         description: Bad Request (Invalid ID)
- *   post:
- *     summary: Convert a user to Google
- *     tags:
- *       - Users
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the user to convert
- *     responses:
- *       200:
- *         description: User converted successfully
  *       400:
  *         description: Bad Request (Invalid ID)
  */

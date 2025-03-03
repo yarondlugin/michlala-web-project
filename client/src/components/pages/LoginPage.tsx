@@ -1,14 +1,12 @@
 import GoogleIcon from '@mui/icons-material/Google';
 import { Box, Button, Card, Typography } from '@mui/material';
 import { useNavigate } from '@tanstack/react-router';
-import { HttpStatusCode, isAxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { useGoogleLogin } from '@react-oauth/google';
-import { Dialog } from '@base-ui-components/react';
 import { useEmailAndPassword } from '../../hooks/UseEmailAndPassword';
 import { axiosClient } from '../../queries/axios';
-import { useDialog } from '../../hooks/useDialog';
 
 export const LoginPage = () => {
     const [errorMessage, setErrorMessage] = useState<string>();
@@ -26,11 +24,6 @@ export const LoginPage = () => {
         } catch (error) {
             if (isAxiosError(error)) {
                 const errorFromServer = error.response?.data?.message;
-                if (error.response?.status === HttpStatusCode.Conflict) {
-                    await setDialogOpen(true);
-                    await setEmail(error.response?.data?.email);
-                    return;
-                }
 
                 if (errorFromServer) {
                     setErrorMessage(errorFromServer);
@@ -40,7 +33,7 @@ export const LoginPage = () => {
             setErrorMessage('Something went wrong, please try again');
         }
     };
-    const { email, setEmail, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
+    const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
 
     const handleGoogleLogin = useGoogleLogin({
         onSuccess: async ({ code }) => handleLogin(code),
@@ -53,14 +46,6 @@ export const LoginPage = () => {
             navigate({ to: '/myProfile' });
         }
     }, [cookies]);
-
-    const { dialogComponent, dialogOpen, setDialogOpen } = useDialog({
-        title: 'User Exists With This Email',
-        description: `A user using this email and a password already exists.
-			If you wish to convert your user to a Google account,
-			please log in with your password and convert from your profile page.`,
-        cancelText: 'Ok, log in with password',
-    });
 
     return (
         <Card
@@ -85,7 +70,6 @@ export const LoginPage = () => {
             <Button onClick={() => handleGoogleLogin()} endIcon={<GoogleIcon />}>
                 Sign in with Google
             </Button>
-            <Dialog.Root open={dialogOpen}>{dialogComponent}</Dialog.Root>
         </Card>
     );
 };

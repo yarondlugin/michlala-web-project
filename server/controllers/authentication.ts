@@ -4,15 +4,21 @@ import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
 import axios from 'axios';
 import { HydratedDocument } from 'mongoose';
-import { userModel, User, userTypes } from '../models/users';
+import { randomUUID } from 'crypto';
+import { userModel, User } from '../models/users';
 import { generateTokens } from '../utils/auth';
 import { Token } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '../utils/cookieOptions';
 import { googleOAuthClient, GoogleUserInfoResponse } from '../services/googleOAuth';
 
-export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
+const createUser = async ({ username, email, password }: Omit<User, '_id' | 'refreshTokens'>): Promise<HydratedDocument<User>> => {
 	const { saltRounds } = appConfig;
+	const hashedPassword = await bcrypt.hash(password, saltRounds);
+	return await userModel.create({ username, email, password: hashedPassword });
+};
+
+export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
 	const { username, email, password } = request.body;
 
 	try {
@@ -31,9 +37,7 @@ export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, 
 			return;
 		}
 
-		const hashedPassword = await bcrypt.hash(password, saltRounds);
-		const creationResponse = await userModel.create({ username, email, password: hashedPassword });
-		const { password: _password, refreshTokens, ...newUser } = creationResponse.toJSON();
+		const { password: _password, refreshTokens, ...newUser } = (await createUser({ username, email, password })).toJSON();
 		response.status(httpStatus.CREATED).send(newUser);
 	} catch (error) {
 		next(error);
@@ -56,7 +60,7 @@ export const loginPassword = async (
 	console.log('Logging in with Password');
 
 	try {
-		const userByUsername = await userModel.findOne<HydratedDocument<User>>({ username: usernameOrEmail, type: userTypes.PASSWORD });
+		const userByUsername = await userModel.findOne<HydratedDocument<User>>({ username: usernameOrEmail });
 		const userByEmail = !userByUsername && (await userModel.findOne<HydratedDocument<User>>({ email: usernameOrEmail }));
 		const user = userByUsername ?? userByEmail;
 
@@ -93,7 +97,7 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 			headers: { Authorization: `Bearer ${access_token}` },
 		});
 
-		const { email, email_verified } = userInfo;
+		const { email, email_verified, name } = userInfo;
 
 		if (!email_verified || !email) {
 			response.status(httpStatus.UNAUTHORIZED).json({ message: 'Unable to login via Google' });
@@ -101,18 +105,15 @@ export const loginGoogle = async (request: Request<{}, {}, { code: string }, {}>
 			return;
 		}
 
-		const existingUsers = await userModel.find({ email });
-		if (existingUsers.some((user) => user.type === userTypes.PASSWORD)) {
-			response
-				.status(httpStatus.CONFLICT)
-				.json({ message: 'User already exists with this email, convert to Google account or login with password', email });
-			console.log(`User ${email} failed to login with Google - existing user with password`);
-			return;
-		}
+		const existingUser = await userModel.findOne({ email });
 
 		const user: HydratedDocument<User> =
-			existingUsers.find((user) => user.type === userTypes.GOOGLE) ??
-			(await userModel.create<User>({ username: email, email, password: email, type: userTypes.GOOGLE, refreshTokens: [] }));
+			existingUser ??
+			(await createUser({
+				username: `${name.replace(' ', '-')}-${Date.now().toString().substring(8)}`,
+				email,
+				password: randomUUID().substring(0, 18),
+			}));
 
 		const { accessToken, refreshToken } = await createUserTokens(user);
 

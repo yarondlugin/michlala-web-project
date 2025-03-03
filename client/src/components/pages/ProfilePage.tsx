@@ -5,9 +5,8 @@ import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { fetchUserById, updateUserById } from '../../queries/users';
-import { User, userTypes } from '../../types/user';
+import { User } from '../../types/user';
 import { ProfileField } from '../ProfileField';
-import { ConvertToGoogle } from '../ConvertToGoogle';
 import { LogoutButton } from '../LogoutButton';
 
 const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number }>> = {
@@ -117,10 +116,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     )}
                 </Box>
             )}
-            <>
-                {userResult?.type === userTypes.PASSWORD && <ConvertToGoogle sx={{marginBottom: '3%'}} userId={userId} onSuccess={() => {refetch()}} />}
-                <LogoutButton />
-            </>
+			<LogoutButton />
         </Box>
     );
 };
