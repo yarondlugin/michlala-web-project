@@ -1,6 +1,7 @@
 import { Request } from 'express';
+import { Types } from 'mongoose';
 
-export type TypeWithId<T> = T & { _id: string };
+export type TypeWithId<T> = T & { _id: Types.ObjectId };
 
 export type Token = {
 	type: 'access' | 'refresh';

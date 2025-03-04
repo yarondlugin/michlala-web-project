@@ -3,6 +3,8 @@ import httpStatus from 'http-status';
 import { isValidObjectId } from 'mongoose';
 import { User, userAllowedFilters, userModel } from '../models/users';
 
+const USER_FIELDS_FILTER = '-password -refreshTokens';
+
 export const getUserByDetails = async (request: Request<{}, {}, {}, Partial<User>>, response: Response, next: NextFunction) => {
 	const filters = Object.entries(request.query)
 		.filter(([key]) => userAllowedFilters.includes(key))
@@ -14,7 +16,7 @@ export const getUserByDetails = async (request: Request<{}, {}, {}, Partial<User
 	}
 
 	try {
-		const user = await userModel.findOne(filters).select('-password -refreshTokens');
+		const user = await userModel.findOne(filters).select(USER_FIELDS_FILTER);
 		response.status(httpStatus.OK).send(user);
 	} catch (error) {
 		next(error);
@@ -30,7 +32,7 @@ export const getUserById = async (request: Request<{ id: string }, {}, {}, {}>, 
 	}
 
 	try {
-		const user = await userModel.findById(userId).select('-password -refreshTokens');
+		const user = await userModel.findById(userId).select(USER_FIELDS_FILTER);
 
 		if (!user) {
 			response.status(httpStatus.NOT_FOUND).send(`User ${userId} not found`);
@@ -57,7 +59,7 @@ export const updateUserById = async (request: Request<{ id: string }>, response:
 	}
 
 	try {
-		const updatedUser = await userModel.findByIdAndUpdate({ _id: userId }, data).select('-password -refreshTokens');
+		const updatedUser = await userModel.findByIdAndUpdate({ _id: userId }, data).select(USER_FIELDS_FILTER);
 
 		if (!updatedUser) {
 			response.status(httpStatus.NOT_FOUND).send(`User with id ${userId} not found`);
@@ -74,7 +76,7 @@ export const deleteUserById = async (request: Request<{ id: string }>, response:
 	const { id: userId } = request.params;
 
 	try {
-		const deletedUser = await userModel.findByIdAndDelete({ _id: userId }).select('-password -refreshTokens');
+		const deletedUser = await userModel.findByIdAndDelete({ _id: userId }).select(USER_FIELDS_FILTER);
 		if (deletedUser === null) {
 			response.status(httpStatus.NOT_FOUND).send(`User with id ${userId} not found`);
 			return;

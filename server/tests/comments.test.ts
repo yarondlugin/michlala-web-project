@@ -58,7 +58,7 @@ describe('Comments API', () => {
 
 			expect(Array.isArray(response.body)).toBe(true);
 			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.find(({ _id, sender }: Comment) => _id === commentId && sender === userId)).toBeDefined();
+			expect(response.body.find(({ _id, sender }: Comment) => _id.toString() === commentId && sender === userId)).toBeDefined();
 		});
 
 		it('should get a comment by id', async () => {

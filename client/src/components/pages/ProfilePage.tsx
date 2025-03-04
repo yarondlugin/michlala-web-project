@@ -4,13 +4,14 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { fetchUserById, updateUserById } from '../queries/users';
-import { User } from '../types/user';
-import { ProfileField } from './ProfileField';
+import { fetchUserById, updateUserById } from '../../queries/users';
+import { User } from '../../types/user';
+import { ProfileField } from '../ProfileField';
+import { LogoutButton } from '../LogoutButton';
 
 const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number }>> = {
-    email: { title: 'Email', widthPercentage: 80 },
-    username: { title: 'Username', widthPercentage: 40 },
+    email: { title: 'Email', widthPercentage: 60 },
+    username: { title: 'Username', widthPercentage: 60 },
 };
 
 type ProfilePageParams = {
@@ -23,7 +24,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [editUser, setEditUser] = useState<User>();
     const queryClient = useQueryClient();
 
-    const { isLoading, data: userResult } = useQuery<User>({
+    const { isFetching, data: userResult, refetch,  } = useQuery<User>({
         queryKey: ['users', userId],
         queryFn: ({ queryKey }) => fetchUserById(queryKey[1] as string),
     });
@@ -78,10 +79,10 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         setIsEditing(false);
     };
 
-    return isLoading ? (
+    return isFetching ? (
         <CircularProgress size={200} />
     ) : (
-        <Box display={'flex'} alignContent={'center'} flexDirection={'column'} textAlign={'center'} sx={{ width: 'max(40vw, 500px)' }}>
+        <Box display={'flex'} alignItems={'center'} flexDirection={'column'} textAlign={'center'} sx={{ width: 'max(40vw, 500px)' }}>
             <Typography fontSize={48} marginBottom={'20%'}>
                 My Profile
             </Typography>
@@ -98,7 +99,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                 />
             ))}
             {isEditable && (
-                <Box marginX={'auto'} marginTop={'10%'}>
+                <Box marginX={'auto'} marginTop={'10%'} marginBottom={'3%'}>
                     {isEditing ? (
                         <>
                             <IconButton onClick={handleCancelEditMode}>
@@ -109,12 +110,13 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                             </IconButton>
                         </>
                     ) : (
-                        <IconButton size={'small'} sx={{ width: 'fit-content' }} onClick={handleEnterEditMode}>
+                        <IconButton onClick={handleEnterEditMode}>
                             <ModeEditIcon />
                         </IconButton>
                     )}
                 </Box>
             )}
+			<LogoutButton />
         </Box>
     );
 };
