@@ -5,7 +5,7 @@ import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { useGoogleLogin } from '@react-oauth/google';
-import { useEmailAndPassword } from '../../hooks/UseEmailAndPassword';
+import { useUserDetailsInputs } from '../../hooks/useUserDetailsInputs';
 import { axiosClient } from '../../queries/axios';
 
 export const LoginPage = () => {
@@ -33,7 +33,7 @@ export const LoginPage = () => {
             setErrorMessage('Something went wrong, please try again');
         }
     };
-    const { email, emailComponent, password, passwordComponent } = useEmailAndPassword({ onSubmit: handleLogin });
+    const { email, emailComponent, password, passwordComponent } = useUserDetailsInputs({ onSubmit: handleLogin });
 
     const handleGoogleLogin = useGoogleLogin({
         onSuccess: async ({ code }) => handleLogin(code),
@@ -64,9 +64,14 @@ export const LoginPage = () => {
                 {passwordComponent}
                 <Typography color="red">{errorMessage}</Typography>
             </Box>
-            <Button variant="contained" sx={{ width: '10%' }} onClick={() => handleLogin()}>
-                Login
-            </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <Button variant="contained" sx={{ width: '10%', marginBottom: '1rem', }} onClick={() => handleLogin()}>
+                    Login
+                </Button>
+                <Button variant="outlined" sx={{ width: '10%' }} onClick={() => navigate({ to: '/register' })}>
+                    Sign Up
+                </Button>
+            </Box>
             <Button onClick={() => handleGoogleLogin()} endIcon={<GoogleIcon />}>
                 Sign in with Google
             </Button>

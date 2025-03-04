@@ -5,9 +5,14 @@ type UseEmailAndPasswordArgs = {
     onSubmit?: () => void | Promise<void>;
 };
 
-export const useEmailAndPassword = ({ onSubmit }: UseEmailAndPasswordArgs) => {
-    const [email, setEmail] = useState<string>();
-    const [password, setPassword] = useState<string>();
+export const useUserDetailsInputs = ({ onSubmit }: UseEmailAndPasswordArgs) => {
+    const [username, setUsername] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+
+    const handleUsernameChanged = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setUsername(event.target.value);
+    };
 
     const handleEmailChanged = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEmail(event.target.value);
@@ -24,13 +29,24 @@ export const useEmailAndPassword = ({ onSubmit }: UseEmailAndPasswordArgs) => {
     };
 
     return {
+		username,
+		setUsername,
         email,
         password,
         setEmail,
         setPassword,
+        usernameComponent: (
+            <TextField
+                placeholder='Username'
+                value={username}
+                onChange={handleUsernameChanged}
+                sx={{ marginBottom: '5%' }}
+                onKeyDown={handleKeyDown}
+            ></TextField>
+        ),
         emailComponent: (
             <TextField
-                placeholder='Email/Username'
+                placeholder='Email'
                 value={email}
                 onChange={handleEmailChanged}
                 sx={{ marginBottom: '5%' }}
