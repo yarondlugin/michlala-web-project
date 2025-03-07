@@ -9,8 +9,8 @@ import { User } from '../../types/user';
 import { ProfileField } from '../ProfileField';
 import { LogoutButton } from '../LogoutButton';
 
-const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number }>> = {
-    email: { title: 'Email', widthPercentage: 60 },
+const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number, disabled?: boolean }>> = {
+    email: { title: 'Email', widthPercentage: 60, disabled: true },
     username: { title: 'Username', widthPercentage: 60 },
 };
 
@@ -86,10 +86,10 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
             <Typography fontSize={48} marginBottom={'20%'}>
                 My Profile
             </Typography>
-            {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage }]) => (
+            {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
                 <ProfileField
                     key={field}
-                    isEditable={isEditing}
+                    isEditable={!disabled && isEditing}
                     title={title}
                     widthPercentage={widthPercentage}
                     value={editUser?.[field as keyof User]}

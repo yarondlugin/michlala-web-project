@@ -1,13 +1,8 @@
 import { Button } from '@mui/material';
-import { useCookies } from 'react-cookie';
+import { useLogout } from '../hooks/useLogout';
 
 export const LogoutButton = () => {
-    const [_, __, removeCookie] = useCookies(['accessToken', 'refreshToken']);
-
-    const logout = () => {
-        removeCookie('accessToken');
-        removeCookie('refreshToken');
-    };
+    const { logout } = useLogout();
 
     return (
         <Button variant='contained' sx={{ width: '100px' }} onClick={logout}>
