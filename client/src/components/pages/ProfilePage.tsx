@@ -23,7 +23,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [editUser, setEditUser] = useState<User>();
     const queryClient = useQueryClient();
 
-    const { isFetching, data: userResult, } = useQuery<User>({
+    const { isFetching, data: userResult, } = useQuery({
         queryKey: ['users', userId],
         queryFn: ({ queryKey }) => fetchUserById(queryKey[1] as string),
     });

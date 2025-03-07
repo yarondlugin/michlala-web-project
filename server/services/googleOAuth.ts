@@ -1,7 +1,7 @@
 import { OAuth2Client } from 'google-auth-library';
 import { appConfig } from '../utils/appConfig';
 
-export interface GoogleUserInfoResponse {
+export type GoogleUserInfoResponse = {
 	email: string;
 	name: string;
 	email_verified: boolean

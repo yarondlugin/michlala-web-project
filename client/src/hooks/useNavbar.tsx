@@ -16,10 +16,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { useLogout } from './useLogout';
 import { SxProps } from '@mui/material';
 
-interface MenuItem {
+type MenuItem = {
     title: string;
     onClick?: () => void;
-}
+};
 
 const NAVBAR_ITEMS = ['Feed', 'Profile'];
 const USER_ITEMS = ['Profile', 'Logout'];
@@ -70,7 +70,7 @@ export const useNavbar = () => () => {
     }, [logout]);
 
     return (
-        <AppBar position="fixed" sx={{ width: '100%', top: 0 }}>
+        <AppBar position="sticky" sx={{ width: '100%', top: 0 }}>
             <Container>
                 <Toolbar disableGutters>
                     <Box sx={{ flexGrow: 1, ...XS_DISPLAY }}>
@@ -123,7 +123,7 @@ export const useNavbar = () => () => {
                             letterSpacing: '.3rem',
                         }}
                     >
-                        SHOWER THOUGHTS 
+                        SHOWER THOUGHTS
                     </Typography>
                     <Box sx={{ flexGrow: 1, ...MD_DISPLAY }}>
                         {navbarMenuItems.map(({ title, onClick }) => (
