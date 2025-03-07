@@ -7,7 +7,6 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { fetchUserById, updateUserById } from '../../queries/users';
 import { User } from '../../types/user';
 import { ProfileField } from '../ProfileField';
-import { LogoutButton } from '../LogoutButton';
 
 const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number, disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
@@ -116,7 +115,6 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     )}
                 </Box>
             )}
-			<LogoutButton />
         </Box>
     );
 };
