@@ -34,7 +34,7 @@ const ProfileLazyRoute = ProfileLazyImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/profile.lazy.then((d) => d.Route))
+} as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
 
 const LoginLazyRoute = LoginLazyImport.update({
   id: '/login',

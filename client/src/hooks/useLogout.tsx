@@ -8,5 +8,5 @@ export const useLogout = () => {
         removeCookie('refreshToken');
     };
 
-	return { logout };
+	return logout;
 };

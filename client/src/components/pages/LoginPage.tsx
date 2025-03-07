@@ -43,7 +43,7 @@ export const LoginPage = () => {
     useEffect(() => {
         const { accessToken } = cookies;
         if (accessToken) {
-            navigate({ to: '/myProfile' });
+            navigate({ to: '/profile' });
         }
     }, [cookies]);
 
