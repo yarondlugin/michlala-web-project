@@ -7,8 +7,10 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { fetchUserById, updateUserById } from '../../queries/users';
 import { User } from '../../types/user';
 import { ProfileField } from '../ProfileField';
+import { PageTitle } from '../PageTitle';
+import { PageBox } from '../PageBox';
 
-const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number, disabled?: boolean }>> = {
+const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
     username: { title: 'Username', widthPercentage: 60 },
 };
@@ -23,7 +25,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [editUser, setEditUser] = useState<User>();
     const queryClient = useQueryClient();
 
-    const { isFetching, data: userResult, } = useQuery({
+    const { isFetching, data: userResult } = useQuery({
         queryKey: ['users', userId],
         queryFn: ({ queryKey }) => fetchUserById(queryKey[1] as string),
     });
@@ -78,43 +80,54 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         setIsEditing(false);
     };
 
-    return isFetching ? (
-        <CircularProgress size={200} />
-    ) : (
-        <Box display={'flex'} alignItems={'center'} flexDirection={'column'} textAlign={'center'} sx={{ width: 'max(40vw, 500px)' }}>
-            <Typography fontSize={48} marginBottom={'20%'}>
-                My Profile
-            </Typography>
-            {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
-                <ProfileField
-                    key={field}
-                    isEditable={!disabled && isEditing}
-                    title={title}
-                    widthPercentage={widthPercentage}
-                    value={editUser?.[field as keyof User]}
-                    handleChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                        handleFieldEdit(field as keyof User, event.target.value)
-                    }
-                />
-            ))}
-            {isEditable && (
-                <Box marginX={'auto'} marginTop={'10%'} marginBottom={'3%'}>
-                    {isEditing ? (
-                        <>
-                            <IconButton onClick={handleCancelEditMode}>
-                                <DoDisturbIcon />
-                            </IconButton>
-                            <IconButton onClick={handleSave}>
-                                <CheckIcon />
-                            </IconButton>
-                        </>
-                    ) : (
-                        <IconButton onClick={handleEnterEditMode}>
-                            <ModeEditIcon />
-                        </IconButton>
+    return (
+        <PageBox>
+            <PageTitle title='My Profile' />
+            {isFetching ? (
+                <CircularProgress size={200} />
+            ) : (
+                <Box
+                    display={'flex'}
+                    alignItems={'center'}
+                    flexDirection={'column'}
+                    textAlign={'center'}
+                    sx={{ width: 'max(40vw, 500px)' }}
+                >
+                    <Typography fontSize={48} marginBottom={'20%'}>
+                        My Profile
+                    </Typography>
+                    {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
+                        <ProfileField
+                            key={field}
+                            isEditable={!disabled && isEditing}
+                            title={title}
+                            widthPercentage={widthPercentage}
+                            value={editUser?.[field as keyof User]}
+                            handleChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+                                handleFieldEdit(field as keyof User, event.target.value)
+                            }
+                        />
+                    ))}
+                    {isEditable && (
+                        <Box marginX={'auto'} marginTop={'10%'} marginBottom={'3%'}>
+                            {isEditing ? (
+                                <>
+                                    <IconButton onClick={handleCancelEditMode}>
+                                        <DoDisturbIcon />
+                                    </IconButton>
+                                    <IconButton onClick={handleSave}>
+                                        <CheckIcon />
+                                    </IconButton>
+                                </>
+                            ) : (
+                                <IconButton onClick={handleEnterEditMode}>
+                                    <ModeEditIcon />
+                                </IconButton>
+                            )}
+                        </Box>
                     )}
                 </Box>
             )}
-        </Box>
+        </PageBox>
     );
 };

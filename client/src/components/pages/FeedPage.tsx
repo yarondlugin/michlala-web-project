@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchPosts } from '../../queries/posts';
-import { Box, CircularProgress } from '@mui/material';
+import { CircularProgress, Stack } from '@mui/material';
 import { PostCard } from '../PostCard';
+import { PageTitle } from '../PageTitle';
+import { PageBox } from '../PageBox';
 
 export const FeedPage = () => {
     const { data, isFetching } = useQuery({ queryKey: ['posts'], queryFn: fetchPosts });
 
-    const postsComponents = data?.map((post) => <PostCard post={post} key={post._id} sx={{marginBottom:'2%'}} />);
+    const postsComponents = data?.map((post) => <PostCard post={post} key={post._id} />);
 
-    return isFetching ? (
-        <CircularProgress size={200} />
-    ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', placeItems: 'center', width: '45%', paddingTop: '5%' }}>{postsComponents}</Box>
+    return (
+        <PageBox>
+            <PageTitle title='Thoughts' />
+            <Stack direction='column' spacing={3} sx={{ width: '45%' }}>
+                {isFetching ? <CircularProgress size={200} /> : [postsComponents]}
+            </Stack>
+        </PageBox>
     );
 };

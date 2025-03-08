@@ -1,8 +1,6 @@
-import { Card, Box, Typography, Avatar, IconButton, Stack, SxProps, Button } from '@mui/material';
+import { Card, Box, Typography, Avatar, Stack, SxProps } from '@mui/material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import RepeatIcon from '@mui/icons-material/Repeat';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import ShareIcon from '@mui/icons-material/Share';
 import { Post } from '../types/post';
 import { ActionButton } from './ActionButton';
 
@@ -19,7 +17,6 @@ export const PostCard = ({ post: { title, content, sender }, sx }: Props) => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 padding: 2,
-                width: '100%',
                 borderRadius: 3,
                 boxShadow: 1,
                 '&:hover': {
@@ -29,6 +26,7 @@ export const PostCard = ({ post: { title, content, sender }, sx }: Props) => {
                 ...sx,
             }}
         >
+			{/* Title section */}
             <Box sx={{ display: 'flex' }}>
                 <Avatar sx={{ width: 48, height: 48, marginRight: 2 }} />
                 <Box>
@@ -48,7 +46,7 @@ export const PostCard = ({ post: { title, content, sender }, sx }: Props) => {
                 </Typography>
             </Box>
 
-            {/* Action buttons */}
+            {/* Action buttons section */}
             <Stack direction="row" sx={{ justifyContent: 'space-around', maxWidth: '20%' }}>
                 <ActionButton text="Reply" icon={<ChatBubbleOutlineIcon />} />
                 <ActionButton text="Like" hoverColor="error.main" icon={<FavoriteBorderIcon />} />
