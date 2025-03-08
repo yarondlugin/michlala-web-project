@@ -1,13 +1,19 @@
 import { TextField } from '@mui/material';
 import { useState } from 'react';
 
-type UseEmailAndPasswordArgs = {
+type Props = {
     onSubmit?: () => void | Promise<void>;
+	usernamePlaceholder?: string;
 };
 
-export const useEmailAndPassword = ({ onSubmit }: UseEmailAndPasswordArgs) => {
-    const [email, setEmail] = useState<string>();
-    const [password, setPassword] = useState<string>();
+export const useUserDetailsInputs = ({ onSubmit, usernamePlaceholder = 'Username' }: Props) => {
+    const [username, setUsername] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+
+    const handleUsernameChanged = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setUsername(event.target.value);
+    };
 
     const handleEmailChanged = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEmail(event.target.value);
@@ -24,13 +30,24 @@ export const useEmailAndPassword = ({ onSubmit }: UseEmailAndPasswordArgs) => {
     };
 
     return {
+		username,
+		setUsername,
         email,
         password,
         setEmail,
         setPassword,
+        usernameComponent: (
+            <TextField
+                placeholder={usernamePlaceholder}
+                value={username}
+                onChange={handleUsernameChanged}
+                sx={{ marginBottom: '5%' }}
+                onKeyDown={handleKeyDown}
+            ></TextField>
+        ),
         emailComponent: (
             <TextField
-                placeholder='Email/Username'
+                placeholder='Email'
                 value={email}
                 onChange={handleEmailChanged}
                 sx={{ marginBottom: '5%' }}
