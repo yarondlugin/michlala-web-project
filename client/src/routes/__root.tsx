@@ -9,13 +9,16 @@ const darkTheme = createTheme({
     palette: {
         mode: 'dark',
     },
+	typography: {
+		fontFamily: 'Quicksand, Roboto'
+	}
 });
 
 const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
     component: () => (
-        <Box display={'flex'} flexDirection={'column'} alignItems={'center'}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <ThemeProvider theme={darkTheme}>
                 <QueryClientProvider client={queryClient}>
                     <CookiesProvider>

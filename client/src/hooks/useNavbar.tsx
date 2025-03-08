@@ -26,6 +26,7 @@ const USER_ITEMS = ['Profile', 'Logout'];
 
 const XS_DISPLAY: SxProps = { display: { xs: 'flex', md: 'none' } };
 const MD_DISPLAY: SxProps = { display: { xs: 'none', md: 'flex' } };
+const LOGO_STYLES: SxProps = { marginRight: 2, fontFamily: 'Julius Sans One', letterSpacing: '.3rem' };
 
 export const useNavbar = () => () => {
     const [navbarAnchorElement, setNavbarAnchorElement] = useState<null | HTMLElement>(null);
@@ -99,13 +100,8 @@ export const useNavbar = () => () => {
                         noWrap
                         sx={{
                             ...XS_DISPLAY,
-                            marginRight: 2,
-                            flexGrow: 1,
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
+                            ...LOGO_STYLES,
+							flexGrow: 1,
                         }}
                     >
                         SHOWER
@@ -117,10 +113,7 @@ export const useNavbar = () => () => {
                         noWrap
                         sx={{
                             ...MD_DISPLAY,
-                            marginRight: 2,
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
+                            ...LOGO_STYLES
                         }}
                     >
                         SHOWER THOUGHTS
