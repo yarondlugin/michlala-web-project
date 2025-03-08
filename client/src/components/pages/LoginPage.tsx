@@ -19,7 +19,7 @@ export const LoginPage = () => {
             if (googleAuthCode) {
                 await axiosClient.post('/auth/login/google', { code: googleAuthCode });
             } else {
-                await axiosClient.post('/auth/login', { username: email, password });
+                await axiosClient.post('/auth/login', { username: usernameOrEmail, password });
             }
         } catch (error) {
             if (isAxiosError(error)) {
@@ -33,7 +33,7 @@ export const LoginPage = () => {
             setErrorMessage('Something went wrong, please try again');
         }
     };
-    const { email, emailComponent, password, passwordComponent } = useUserDetailsInputs({ onSubmit: handleLogin });
+    const { username: usernameOrEmail, usernameComponent, password, passwordComponent } = useUserDetailsInputs({ onSubmit: handleLogin, usernamePlaceholder: 'Username / Email' });
 
     const handleGoogleLogin = useGoogleLogin({
         onSuccess: async ({ code }) => handleLogin(code),
@@ -60,20 +60,23 @@ export const LoginPage = () => {
         >
             <Typography fontSize={64}>Welcome!</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center' }}>
-                {emailComponent}
+                {usernameComponent}
                 {passwordComponent}
                 <Typography color="red">{errorMessage}</Typography>
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                <Button variant="contained" sx={{ width: '10%', marginBottom: '1rem', }} onClick={() => handleLogin()}>
+                <Button variant="contained" sx={{ width: '10%', marginBottom: '1%', }} onClick={() => handleLogin()}>
                     Login
                 </Button>
-                <Button variant="outlined" sx={{ width: '10%' }} onClick={() => navigate({ to: '/register' })}>
-                    Sign Up
-                </Button>
+				<Typography color='primary'>
+					Don't have an account?
+				</Typography>
+				<Typography color='primary' sx={{textDecoration: 'underline', cursor: 'pointer'}} onClick={() => navigate({ to: '/register' })}>
+					Register
+				</Typography>
             </Box>
             <Button onClick={() => handleGoogleLogin()} endIcon={<GoogleIcon />}>
-                Sign in with Google
+                Login with Google
             </Button>
         </Card>
     );

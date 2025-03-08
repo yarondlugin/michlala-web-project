@@ -1,11 +1,12 @@
 import { TextField } from '@mui/material';
 import { useState } from 'react';
 
-type UseEmailAndPasswordArgs = {
+type Props = {
     onSubmit?: () => void | Promise<void>;
+	usernamePlaceholder?: string;
 };
 
-export const useUserDetailsInputs = ({ onSubmit }: UseEmailAndPasswordArgs) => {
+export const useUserDetailsInputs = ({ onSubmit, usernamePlaceholder = 'Username' }: Props) => {
     const [username, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -37,7 +38,7 @@ export const useUserDetailsInputs = ({ onSubmit }: UseEmailAndPasswordArgs) => {
         setPassword,
         usernameComponent: (
             <TextField
-                placeholder='Username'
+                placeholder={usernamePlaceholder}
                 value={username}
                 onChange={handleUsernameChanged}
                 sx={{ marginBottom: '5%' }}
