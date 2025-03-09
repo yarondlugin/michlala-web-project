@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { isValidObjectId } from 'mongoose';
-import { postModel } from '../models/posts';
+import { FilterQuery, isValidObjectId } from 'mongoose';
+import { Post, postModel } from '../models/posts';
 import { AddUserIdToRequest } from '../utils/types';
 
 export const createPost = async (request: Request, response: Response, next: NextFunction) => {
@@ -15,12 +15,33 @@ export const createPost = async (request: Request, response: Response, next: Nex
 	}
 };
 
-export const getAllPosts = async (request: Request<{}, {}, {}, { sender?: string }>, response: Response, next: NextFunction) => {
+export const getAllPosts = async (
+	request: Request<{}, {}, {}, { sender?: string; limit?: string; lastId?: string }>,
+	response: Response,
+	next: NextFunction
+) => {
 	try {
-		const { sender } = request.query;
+		const { sender, limit: limitParam, lastId } = request.query;
+		const limit = Number(limitParam) || 0;
 
-		const posts = await postModel.find(!!sender ? { sender } : {});
-		response.status(httpStatus.OK).send(posts);
+		const lastIdFilter: FilterQuery<Post> = !!lastId ? { _id: { $lt: lastId } } : {};
+		const senderFilter: FilterQuery<Post> = !!sender ? { sender } : {};
+
+		const query: FilterQuery<Post> = {
+			...lastIdFilter,
+			...senderFilter,
+		};
+
+		const posts = await postModel
+			.find(query)
+			.sort({ _id: -1 })
+			.limit(limit ?? 0);
+
+		response.status(httpStatus.OK).send({
+			posts,
+			hasMore: posts.length === limit,
+			lastId: posts.length ? posts[posts.length - 1]._id : null,
+		});
 	} catch (error) {
 		next(error);
 	}

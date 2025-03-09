@@ -4,3 +4,9 @@ export type Post = {
     content: string;
     sender: string;
 };
+
+export type PostBatchResponse = {
+	posts: Post[];
+	hasMore: boolean;
+	lastId: string | null;
+}
