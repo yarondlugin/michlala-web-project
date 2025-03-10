@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { FilterQuery, isValidObjectId } from 'mongoose';
 import { Post, postModel } from '../models/posts';
 import { AddUserIdToRequest } from '../utils/types';
+import { generateAIPosts } from '../services/ai';
 
 export const createPost = async (request: Request, response: Response, next: NextFunction) => {
 	const postBody = request.body;

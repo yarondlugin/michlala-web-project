@@ -34,7 +34,7 @@ export const PostCard = ({ post: { title, content, sender }, sx }: Props) => {
                         {title}
                     </Typography>
                     <Typography variant='body2' sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
-                        @{sender}
+                        @{sender.replace('@','')}
                     </Typography>
                 </Box>
             </Box>
