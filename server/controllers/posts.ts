@@ -21,6 +21,7 @@ export const getAllPosts = async (
 	next: NextFunction
 ) => {
 	try {
+		await new Promise((resolve) => setTimeout(resolve, 2000))
 		const { sender, limit: limitParam, lastId } = request.query;
 		const limit = Number(limitParam) || 0;
 
