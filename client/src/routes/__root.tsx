@@ -18,7 +18,7 @@ const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
     component: () => (
-        <Box id='root-box' sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Box id='root-box' sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <ThemeProvider theme={darkTheme}>
                 <CssBaseline />
                 <QueryClientProvider client={queryClient}>
