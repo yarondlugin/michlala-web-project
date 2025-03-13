@@ -39,7 +39,7 @@ export const getAllPosts = async (
 		response.status(httpStatus.OK).send({
 			posts,
 			hasMore: posts.length === limit,
-			lastId: posts.slice(-1)[0]._id ?? null,
+			lastId: posts.slice(-1)[0]?._id ?? null,
 		});
 	} catch (error) {
 		next(error);
