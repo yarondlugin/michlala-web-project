@@ -61,7 +61,7 @@ describe('Authentication API', () => {
 		it('should be able to access /posts with a valid token', async () => {
 			const response = await request(app).get('/posts').set(getAuthorizationHeader()).expect(httpStatus.OK);
 
-			expect(Array.isArray(response.body)).toBe(true);
+			expect(Array.isArray(response.body.posts)).toBe(true);
 		});
 
 		it('should refresh tokens', async () => {
@@ -81,7 +81,7 @@ describe('Authentication API', () => {
 		it('should be able to access /posts with a valid token (after refresh)', async () => {
 			const response = await request(app).get('/posts').set(getAuthorizationHeader()).expect(httpStatus.OK);
 
-			expect(Array.isArray(response.body)).toBe(true);
+			expect(Array.isArray(response.body.posts)).toBe(true);
 		});
 
 		it('should logout a user', async () => {

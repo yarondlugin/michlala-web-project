@@ -3,7 +3,7 @@ import styles from './useDialog.module.css';
 import { Box, Button, Card } from '@mui/material';
 import { useState } from 'react';
 
-interface Props {
+type Props = {
     title?: string;
     description?: string;
     cancelText?: string;

@@ -2,7 +2,7 @@ import { User } from '../types/user';
 import { axiosClient } from './axios';
 
 export const fetchUserById = async (userId: string) => {
-    const response = await axiosClient.get(`/users/${userId}`);
+    const response = await axiosClient.get<User>(`/users/${userId}`);
     return response.data;
 };
 

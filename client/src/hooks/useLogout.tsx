@@ -1,7 +1,6 @@
-import { Button } from '@mui/material';
 import { useCookies } from 'react-cookie';
 
-export const LogoutButton = () => {
+export const useLogout = () => {
     const [_, __, removeCookie] = useCookies(['accessToken', 'refreshToken']);
 
     const logout = () => {
@@ -9,9 +8,5 @@ export const LogoutButton = () => {
         removeCookie('refreshToken');
     };
 
-    return (
-        <Button variant='contained' sx={{ width: '100px' }} onClick={logout}>
-            Logout
-        </Button>
-    );
+	return logout;
 };

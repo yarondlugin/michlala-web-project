@@ -17,9 +17,9 @@ import { Route as rootRoute } from './routes/__root'
 // Create Virtual Routes
 
 const RegisterLazyImport = createFileRoute('/register')()
-const MyProfileLazyImport = createFileRoute('/myProfile')()
+const ProfileLazyImport = createFileRoute('/profile')()
 const LoginLazyImport = createFileRoute('/login')()
-const IndexLazyImport = createFileRoute('/')()
+const FeedLazyImport = createFileRoute('/feed')()
 
 // Create/Update Routes
 
@@ -29,11 +29,11 @@ const RegisterLazyRoute = RegisterLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/register.lazy').then((d) => d.Route))
 
-const MyProfileLazyRoute = MyProfileLazyImport.update({
-  id: '/myProfile',
-  path: '/myProfile',
+const ProfileLazyRoute = ProfileLazyImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/myProfile.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
 
 const LoginLazyRoute = LoginLazyImport.update({
   id: '/login',
@@ -41,21 +41,21 @@ const LoginLazyRoute = LoginLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
 
-const IndexLazyRoute = IndexLazyImport.update({
-  id: '/',
-  path: '/',
+const FeedLazyRoute = FeedLazyImport.update({
+  id: '/feed',
+  path: '/feed',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/feed.lazy').then((d) => d.Route))
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedLazyImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -65,11 +65,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
-    '/myProfile': {
-      id: '/myProfile'
-      path: '/myProfile'
-      fullPath: '/myProfile'
-      preLoaderRoute: typeof MyProfileLazyImport
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileLazyImport
       parentRoute: typeof rootRoute
     }
     '/register': {
@@ -85,47 +85,47 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute
+  '/feed': typeof FeedLazyRoute
   '/login': typeof LoginLazyRoute
-  '/myProfile': typeof MyProfileLazyRoute
+  '/profile': typeof ProfileLazyRoute
   '/register': typeof RegisterLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute
+  '/feed': typeof FeedLazyRoute
   '/login': typeof LoginLazyRoute
-  '/myProfile': typeof MyProfileLazyRoute
+  '/profile': typeof ProfileLazyRoute
   '/register': typeof RegisterLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexLazyRoute
+  '/feed': typeof FeedLazyRoute
   '/login': typeof LoginLazyRoute
-  '/myProfile': typeof MyProfileLazyRoute
+  '/profile': typeof ProfileLazyRoute
   '/register': typeof RegisterLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/myProfile' | '/register'
+  fullPaths: '/feed' | '/login' | '/profile' | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/myProfile' | '/register'
-  id: '__root__' | '/' | '/login' | '/myProfile' | '/register'
+  to: '/feed' | '/login' | '/profile' | '/register'
+  id: '__root__' | '/feed' | '/login' | '/profile' | '/register'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute
+  FeedLazyRoute: typeof FeedLazyRoute
   LoginLazyRoute: typeof LoginLazyRoute
-  MyProfileLazyRoute: typeof MyProfileLazyRoute
+  ProfileLazyRoute: typeof ProfileLazyRoute
   RegisterLazyRoute: typeof RegisterLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexLazyRoute: IndexLazyRoute,
+  FeedLazyRoute: FeedLazyRoute,
   LoginLazyRoute: LoginLazyRoute,
-  MyProfileLazyRoute: MyProfileLazyRoute,
+  ProfileLazyRoute: ProfileLazyRoute,
   RegisterLazyRoute: RegisterLazyRoute,
 }
 
@@ -139,20 +139,20 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
+        "/feed",
         "/login",
-        "/myProfile",
+        "/profile",
         "/register"
       ]
     },
-    "/": {
-      "filePath": "index.lazy.tsx"
+    "/feed": {
+      "filePath": "feed.lazy.tsx"
     },
     "/login": {
       "filePath": "login.lazy.tsx"
     },
-    "/myProfile": {
-      "filePath": "myProfile.lazy.tsx"
+    "/profile": {
+      "filePath": "profile.lazy.tsx"
     },
     "/register": {
       "filePath": "register.lazy.tsx"

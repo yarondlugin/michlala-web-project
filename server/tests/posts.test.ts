@@ -46,9 +46,9 @@ describe('Posts API', () => {
 		it('should get all posts', async () => {
 			const response = await request(app).get('/posts').set(getAuthorizationHeader()).expect(httpStatus.OK);
 
-			expect(Array.isArray(response.body)).toBe(true);
-			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.find(({ _id, sender }: Post) => _id.toString() === postId && sender === userId)).toBeDefined();
+			expect(Array.isArray(response.body.posts)).toBe(true);
+			expect(response.body.posts.length).toBeGreaterThan(0);
+			expect(response.body.posts.find(({ _id, sender }: Post) => _id.toString() === postId && sender === userId)).toBeDefined();
 		});
 
 		it('should get a post by id', async () => {
@@ -83,9 +83,9 @@ describe('Posts API', () => {
 				.query({ sender: userId })
 				.expect(httpStatus.OK);
 
-			expect(Array.isArray(response.body)).toBe(true);
-			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.every(({ sender }: Post) => sender === userId)).toBe(true);
+			expect(Array.isArray(response.body.posts)).toBe(true);
+			expect(response.body.posts.length).toBeGreaterThan(0);
+			expect(response.body.posts.every(({ sender }: Post) => sender === userId)).toBe(true);
 		});
 	});
 

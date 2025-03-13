@@ -19,5 +19,6 @@ export const appConfig = {
 		id: process.env.GOOGLE_CLIENT_ID || 'googleclientid',
 		secret: process.env.GOOGLE_CLIENT_SECRET || 'googleclientsecret',
 		userInfoApi: process.env.GOOGLE_USER_INFO_API || 'https://www.googleapis.com/oauth2/v3/userinfo',
-	}
+	},
+	maxPostsBatch: Number(process.env.MAX_POSTS_BATCH) || 50,
 } as const;

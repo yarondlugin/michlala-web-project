@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useUserDetailsInputs } from '../../hooks/useUserDetailsInputs';
 import { axiosClient } from '../../queries/axios';
+import { PageBox } from '../PageBox';
 
 export const RegisterPage = () => {
     const [errorMessage, setErrorMessage] = useState<string>('');
@@ -42,34 +43,38 @@ export const RegisterPage = () => {
     });
 
     return (
-        <Card
-            sx={{
-                width: '70vw',
-                height: '70vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-around',
-                alignItems: 'center',
-            }}
-        >
-            <Typography fontSize={64}>Create Account</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center' }}>
-                {usernameComponent}
-                {emailComponent}
-                {passwordComponent}
-                <Typography color="red">{errorMessage}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                <Button variant="contained" sx={{ width: '10%', marginBottom: '3%', }} onClick={handleRegister}>
-                    Register
-                </Button>
-				<Typography color='primary'>
-					Already have an account?
-				</Typography>
-				<Typography color='primary' sx={{textDecoration: 'underline', cursor: 'pointer'}} onClick={() => navigate({ to: '/login' })}>
-					Login
-				</Typography>
-            </Box>
-        </Card>
+        <PageBox sx={{ justifyContent: 'center' }}>
+            <Card
+                sx={{
+                    width: '70vw',
+                    height: '70vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-around',
+                    alignItems: 'center',
+                }}
+            >
+                <Typography fontSize={64}>Create Account</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center' }}>
+                    {usernameComponent}
+                    {emailComponent}
+                    {passwordComponent}
+                    <Typography color='red'>{errorMessage}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <Button variant='contained' sx={{ width: '10%', marginBottom: '3%' }} onClick={handleRegister}>
+                        Register
+                    </Button>
+                    <Typography color='primary'>Already have an account?</Typography>
+                    <Typography
+                        color='primary'
+                        sx={{ textDecoration: 'underline', cursor: 'pointer' }}
+                        onClick={() => navigate({ to: '/login' })}
+                    >
+                        Login
+                    </Typography>
+                </Box>
+            </Card>
+        </PageBox>
     );
 };
