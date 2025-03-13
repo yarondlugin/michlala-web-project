@@ -8,8 +8,6 @@ import { PageTitle } from '../PageTitle';
 import { PageBox } from '../PageBox';
 import { PostBatchResponse } from '../../types/post';
 
-const POSTS_PER_PAGE = 20;
-
 export const FeedPage = () => {
     const { data, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<
         PostBatchResponse,
@@ -19,7 +17,7 @@ export const FeedPage = () => {
         string | undefined
     >({
         queryKey: ['posts'],
-        queryFn: ({ pageParam = '' }) => fetchPostsBatch(POSTS_PER_PAGE, pageParam),
+        queryFn: ({ pageParam = '' }) => fetchPostsBatch(import.meta.env.VITE_POSTS_PER_PAGE, pageParam),
         getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.lastId : undefined),
         initialPageParam: undefined,
     });
@@ -28,16 +26,18 @@ export const FeedPage = () => {
         page.posts.map((post) => <PostCard post={post} key={post._id} sx={{ width: '100%' }} />),
     );
 
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || isFetchingNextPage)
-                return;
-            if (hasNextPage) fetchNextPage();
-        };
+	const handleScroll = () => {
+		if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || isFetchingNextPage)
+			return;
+		if (hasNextPage) fetchNextPage();
+	};
 
-        window.addEventListener('scroll', handleScroll);
+    useEffect(() => {
+		if (hasNextPage) {
+			window.addEventListener('scroll', handleScroll);
+		}
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    }, [hasNextPage]);
 
     return (
         <PageBox>
