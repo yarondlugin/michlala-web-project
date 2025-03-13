@@ -6,7 +6,7 @@ type Props = {
 
 export const PageTitle = ({ title }: Props) => {
     return (
-        <Typography variant='h3' sx={{ width: '45%', textAlign: 'start', marginBottom: 3 }}>
+        <Typography variant='h3' sx={{ width: '45%', textAlign: 'start', marginBottom: 5 }}>
             {title}
         </Typography>
     );

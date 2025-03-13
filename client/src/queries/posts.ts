@@ -1,4 +1,4 @@
-import { Post, PostBatchResponse } from '../types/post';
+import { NewPost, Post, PostBatchResponse } from '../types/post';
 import { axiosClient } from './axios';
 
 export const fetchPosts = async () => {
@@ -8,5 +8,10 @@ export const fetchPosts = async () => {
 
 export const fetchPostsBatch = async (limit: number, lastId?: string) => {
     const response = await axiosClient.get<PostBatchResponse>(`/posts/?limit=${limit}${lastId ? `&lastId=${lastId}` : ''}`);
+    return response.data;
+};
+
+export const createNewPost = async (post: NewPost) => {
+    const response = await axiosClient.post<Post>(`/posts`, post);
     return response.data;
 };

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { FilterQuery, isValidObjectId } from 'mongoose';
+import { FilterQuery, isValidObjectId, Types } from 'mongoose';
 import { Post, postModel } from '../models/posts';
 import { AddUserIdToRequest } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
@@ -26,15 +26,30 @@ export const getAllPosts = async (
 	const { sender, limit: limitParam, lastId } = request.query;
 	const limit = Math.min(Number(limitParam) || maxPostsBatch, maxPostsBatch);
 
-	const lastIdFilter: FilterQuery<Post> = !!lastId ? { _id: { $lt: lastId } } : {};
+	const lastIdFilter: FilterQuery<Post> = !!lastId ? { _id: { $lt: new Types.ObjectId(lastId) } } : {};
 	const senderFilter: FilterQuery<Post> = !!sender ? { sender } : {};
 	const query: FilterQuery<Post> = { ...lastIdFilter, ...senderFilter };
 
 	try {
-		const posts = await postModel
-			.find(query)
-			.sort({ _id: -1 })
-			.limit(limit ?? 0);
+		const posts = await postModel.aggregate([
+			{ $match: query },
+			{
+				$addFields: {
+					objectIdSender: { $cond: [{ $eq: ['$isAI', true] }, '', { $toObjectId: '$sender' }] },
+				},
+			},
+			{
+				$lookup: {
+					from: 'users',
+					localField: 'objectIdSender',
+					foreignField: '_id',
+					as: 'senderDetails',
+				},
+			},
+			{ $project: { objectIdSender: 0 } },
+			{ $sort: { _id: -1 } },
+			{ $limit: limit ?? 0 },
+		]);
 
 		response.status(httpStatus.OK).send({
 			posts,
