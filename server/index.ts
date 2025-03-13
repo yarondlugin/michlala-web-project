@@ -14,6 +14,7 @@ import { usersRouter } from './routes/users';
 import { startDB } from './services/db';
 import { swagger } from './swagger';
 import { appConfig } from './utils/appConfig';
+import { postGenerationCronJob } from './services/ai';
 
 dotenv.config();
 const {
@@ -48,6 +49,8 @@ app.use(authorize);
 app.use('/posts', postsRouter);
 app.use('/comments', commentsRouter);
 app.use('/users', usersRouter);
+
+postGenerationCronJob.start();
 
 const serverRunningCallback = () => console.log(`Server is running on port ${port}!`);
 switch (nodeEnv) {

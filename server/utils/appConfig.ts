@@ -20,5 +20,13 @@ export const appConfig = {
 		secret: process.env.GOOGLE_CLIENT_SECRET || 'googleclientsecret',
 		userInfoApi: process.env.GOOGLE_USER_INFO_API || 'https://www.googleapis.com/oauth2/v3/userinfo',
 	},
+	aiClient: {
+		apiUrl: process.env.AI_API_URL || 'aiApiUrl',
+		apiKey: process.env.AI_API_KEY || 'apikey',
+	},
+	postGeneration:{
+		batchAmount: process.env.POST_GENERATION_BATCH || 20,
+		schedule: process.env.POST_GENERATION_SCHEDULE || '0 1 * * *',
+	},
 	maxPostsBatch: Number(process.env.MAX_POSTS_BATCH) || 50,
 } as const;

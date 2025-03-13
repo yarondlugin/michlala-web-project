@@ -1,5 +1,5 @@
 #root {
-  min-width: 100%;
+  width: 100%;
   min-height: 100vh;
 
   color-scheme: light dark;
@@ -14,4 +14,8 @@ body {
   place-items: start;
   min-width: 320px;
   min-height: 100vh;
+}
+
+html {
+	min-height: 100vh;
 }

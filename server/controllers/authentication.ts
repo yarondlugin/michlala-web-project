@@ -18,8 +18,25 @@ const createUser = async ({ username, email, password }: Omit<User, '_id' | 'ref
 	return await userModel.create({ username, email, password: hashedPassword });
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9-_]+$/;
+
 export const register = async (request: Request<{}, {}, Omit<User, '_id'>, {}>, response: Response, next: NextFunction) => {
 	const { username, email, password } = request.body;
+
+	if (!USERNAME_REGEX.test(username)) {
+		response.status(httpStatus.BAD_REQUEST).json({
+			message: 'Username can only contain letters, numbers, hyphens, and underscores',
+		});
+		return;
+	}
+
+	if (!EMAIL_REGEX.test(email)) {
+		response.status(httpStatus.BAD_REQUEST).json({
+			message: 'Email must be valid',
+		})
+		return;	
+	}
 
 	try {
 		const existingUser = await userModel.findOne({ $or: [{ username }, { email }] });
