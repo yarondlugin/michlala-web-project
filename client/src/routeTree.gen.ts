@@ -20,7 +20,6 @@ const RegisterLazyImport = createFileRoute('/register')()
 const ProfileLazyImport = createFileRoute('/profile')()
 const LoginLazyImport = createFileRoute('/login')()
 const FeedLazyImport = createFileRoute('/feed')()
-const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
 
@@ -48,23 +47,10 @@ const FeedLazyRoute = FeedLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/feed.lazy').then((d) => d.Route))
 
-const IndexLazyRoute = IndexLazyImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
-
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
-      parentRoute: typeof rootRoute
-    }
     '/feed': {
       id: '/feed'
       path: '/feed'
@@ -99,7 +85,6 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute
   '/feed': typeof FeedLazyRoute
   '/login': typeof LoginLazyRoute
   '/profile': typeof ProfileLazyRoute
@@ -107,7 +92,6 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute
   '/feed': typeof FeedLazyRoute
   '/login': typeof LoginLazyRoute
   '/profile': typeof ProfileLazyRoute
@@ -116,7 +100,6 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexLazyRoute
   '/feed': typeof FeedLazyRoute
   '/login': typeof LoginLazyRoute
   '/profile': typeof ProfileLazyRoute
@@ -125,15 +108,14 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feed' | '/login' | '/profile' | '/register'
+  fullPaths: '/feed' | '/login' | '/profile' | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feed' | '/login' | '/profile' | '/register'
-  id: '__root__' | '/' | '/feed' | '/login' | '/profile' | '/register'
+  to: '/feed' | '/login' | '/profile' | '/register'
+  id: '__root__' | '/feed' | '/login' | '/profile' | '/register'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute
   FeedLazyRoute: typeof FeedLazyRoute
   LoginLazyRoute: typeof LoginLazyRoute
   ProfileLazyRoute: typeof ProfileLazyRoute
@@ -141,7 +123,6 @@ export interface RootRouteChildren {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexLazyRoute: IndexLazyRoute,
   FeedLazyRoute: FeedLazyRoute,
   LoginLazyRoute: LoginLazyRoute,
   ProfileLazyRoute: ProfileLazyRoute,
@@ -158,15 +139,11 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
         "/feed",
         "/login",
         "/profile",
         "/register"
       ]
-    },
-    "/": {
-      "filePath": "index.lazy.tsx"
     },
     "/feed": {
       "filePath": "feed.lazy.tsx"

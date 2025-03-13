@@ -27,5 +27,6 @@ export const appConfig = {
 	postGeneration:{
 		batchAmount: process.env.POST_GENERATION_BATCH || 20,
 		schedule: process.env.POST_GENERATION_SCHEDULE || '0 1 * * *',
-	}
+	},
+	maxPostsBatch: Number(process.env.MAX_POSTS_BATCH) || 50,
 } as const;
