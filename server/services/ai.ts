@@ -22,7 +22,7 @@ const aiClient = axios.create({
 	withCredentials: true,
 });
 
-export const generateAIPosts = async () => {
+const generateAIPosts = async () => {
 	console.log(`Generating ${batchAmount} AI posts`);
 
 	const response = await aiClient.post(
