@@ -5,11 +5,9 @@ import { app } from '../index';
 import { Post } from '../models/posts';
 import { closeDB } from '../services/db';
 import { login } from './utils';
-import { postGenerationCronJob } from '../services/ai';
 
 afterAll(() => {
 	closeDB();
-	postGenerationCronJob.stop();
 });
 
 describe('Posts API', () => {
