@@ -50,16 +50,16 @@ app.use('/posts', postsRouter);
 app.use('/comments', commentsRouter);
 app.use('/users', usersRouter);
 
-postGenerationCronJob.start();
-
 const serverRunningCallback = () => console.log(`Server is running on port ${port}!`);
 switch (nodeEnv) {
 	case 'test':
 		break;
 	case 'localhost':
+		postGenerationCronJob.start();
 		https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, app).listen(port, serverRunningCallback);
 		break;
 	default:
+		postGenerationCronJob.start();
 		app.listen(port, serverRunningCallback);
 		break;
 }
