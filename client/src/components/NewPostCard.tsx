@@ -45,6 +45,8 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                                 ],
                             };
                         }
+
+                        return page;
                     }),
                 };
             });
