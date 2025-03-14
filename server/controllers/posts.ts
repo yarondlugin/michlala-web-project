@@ -43,7 +43,6 @@ export const getAllPosts = async (
 					from: 'users',
 					localField: 'objectIdSender',
 					foreignField: '_id',
-					pipeline: [{ $project: { password: 0, refreshTokens: 0 } }],
 					as: 'senderDetails',
 				},
 			},
@@ -100,50 +99,6 @@ export const updatePostById = async (request: Request<{ id: string }>, response:
 		}
 
 		response.status(httpStatus.OK).send('Updated successfully');
-	} catch (error) {
-		next(error);
-	}
-};
-
-export const likePostById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
-	try {
-		const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
-		const { id: postId } = request.params;
-
-		if (!isValidObjectId(postId)) {
-			response.status(httpStatus.BAD_REQUEST).send('Invalid id');
-			return;
-		}
-
-		const updateResponse = await postModel.updateOne({ _id: postId }, { $addToSet: { likedUsers: userId } });
-		if (updateResponse.matchedCount === 0) {
-			response.status(httpStatus.NOT_FOUND).send(`Post with id ${postId} not found`);
-			return;
-		}
-
-		response.status(httpStatus.OK).send('Liked successfully');
-	} catch (error) {
-		next(error);
-	}
-};
-
-export const unlikePostById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
-	try {
-		const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
-		const { id: postId } = request.params;
-
-		if (!isValidObjectId(postId)) {
-			response.status(httpStatus.BAD_REQUEST).send('Invalid id');
-			return;
-		}
-
-		const updateResponse = await postModel.updateOne({ _id: postId }, { $pull: { likedUsers: userId } });
-		if (updateResponse.matchedCount === 0) {
-			response.status(httpStatus.NOT_FOUND).send(`Post with id ${postId} not found`);
-			return;
-		}
-
-		response.status(httpStatus.OK).send('Unliked successfully');
 	} catch (error) {
 		next(error);
 	}
