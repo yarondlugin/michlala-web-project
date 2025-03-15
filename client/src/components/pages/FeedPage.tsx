@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, IconButton, Modal, Stack, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Button, CircularProgress, Modal, Stack, Typography } from '@mui/material';
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
+import { useEffect, useState } from 'react';
 import { fetchPostsBatch } from '../../queries/posts';
-import { PostCard } from '../PostCard';
-import { PageTitle } from '../PageTitle';
-import { PageBox } from '../PageBox';
 import { PostBatchResponse } from '../../types/post';
 import { NewPostCard } from '../NewPostCard';
-import AddIcon from '@mui/icons-material/Add';
+import { PageBox } from '../PageBox';
+import { PageTitle } from '../PageTitle';
+import { PostCard } from '../PostCard';
 
 export const FeedPage = () => {
     const [isNewPostOpen, setIsNewPostOpen] = useState(false);
