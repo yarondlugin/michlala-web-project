@@ -6,6 +6,7 @@ export type Post = {
     isNew?: boolean;
     senderDetails?: { username: string }[];
     isAI?: boolean;
+    likedUsers?: string[];
 };
 
 export type PostBatchResponse = {
