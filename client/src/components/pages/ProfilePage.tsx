@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Avatar, Box, CircularProgress, IconButton } from '@mui/material';
+import { Avatar, Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useShowProfilePicture } from '../../hooks/useShowProfilePicture';
@@ -10,6 +10,7 @@ import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
 import { ProfileField } from '../ProfileField';
+import { isAxiosError } from 'axios';
 
 const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
@@ -24,6 +25,7 @@ type ProfilePageParams = {
 export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editUser, setEditUser] = useState<EditUser>();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { showProfilePictureModal, setIsShowingProfilePicture } = useShowProfilePicture(editUser);
     const uploadFileRef = useRef<HTMLInputElement>(null);
     const profilePictureAnchor = useRef<HTMLImageElement>(null);
@@ -38,7 +40,16 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         mutationKey: ['users', userId],
         mutationFn: async (data: Partial<EditUser>) => {
             if (data?.newProfilePicture) {
-                await updateUserProfilePictureById(userId, data.newProfilePicture);
+                try {
+                    await updateUserProfilePictureById(userId, data.newProfilePicture);
+                } catch (error) {
+                    const GENERIC_ERROR_MESSAGE = 'Error updating profile picture';
+                    if (isAxiosError(error)) {
+                        setErrorMessage(error.response?.data ?? GENERIC_ERROR_MESSAGE);
+                    } else {
+                        setErrorMessage(GENERIC_ERROR_MESSAGE);
+                    }
+                }
             }
 
             const { newProfilePicture, profilePictureURL, ...dataWithoutProfilePicture } = data;
@@ -77,6 +88,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
 
     const handleEnterEditMode = () => {
         setIsEditing(true);
+        setErrorMessage(null);
     };
 
     const handleCancelEditMode = () => {
@@ -161,6 +173,9 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                             }
                         />
                     ))}
+                    <Typography variant='body2' color='error'>
+                        {errorMessage ?? '‎' /*Invisible character so the error message is always rendered*/}
+                    </Typography>
                     {isEditable && (
                         <Box marginX={'auto'} marginTop={'10%'} marginBottom={'3%'}>
                             {isEditing ? (
