@@ -1,14 +1,15 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Box, CircularProgress, IconButton } from '@mui/material';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { fetchUserById, updateUserById } from '../../queries/users';
+import { useMyDetails } from '../../hooks/useMyDetails';
+import { updateUserById } from '../../queries/users';
 import { User } from '../../types/user';
-import { ProfileField } from '../ProfileField';
-import { PageTitle } from '../PageTitle';
 import { PageBox } from '../PageBox';
+import { PageTitle } from '../PageTitle';
+import { ProfileField } from '../ProfileField';
 
 const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
@@ -25,13 +26,10 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [editUser, setEditUser] = useState<User>();
     const queryClient = useQueryClient();
 
-    const { isFetching, data: userResult } = useQuery({
-        queryKey: ['users', userId],
-        queryFn: ({ queryKey }) => fetchUserById(queryKey[1] as string),
-    });
+    const { isFetching, userResult } = useMyDetails(userId);
 
     const { mutate: updateUser } = useMutation({
-        mutationKey: ['users', userId],
+        mutationKey: ['editUser', userId],
         mutationFn: (data: Partial<User>) => updateUserById(userId, data),
         onMutate: async (newData) => {
             await queryClient.cancelQueries({ queryKey: ['users', userId] });
@@ -93,9 +91,6 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     textAlign={'center'}
                     sx={{ width: 'max(40vw, 500px)' }}
                 >
-                    <Typography fontSize={48} marginBottom={'20%'}>
-                        My Profile
-                    </Typography>
                     {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
                         <ProfileField
                             key={field}

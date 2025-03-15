@@ -24,9 +24,9 @@ export const appConfig = {
 		apiUrl: process.env.AI_API_URL || 'aiApiUrl',
 		apiKey: process.env.AI_API_KEY || 'apikey',
 	},
-	postGeneration:{
+	postGeneration: {
 		batchAmount: process.env.POST_GENERATION_BATCH || 20,
-		schedule: process.env.POST_GENERATION_SCHEDULE || '0 1 * * *',
+		schedule: process.env.POST_GENERATION_SCHEDULE || '29 1 * * *',
 	},
-	maxPostsBatch: Number(process.env.MAX_POSTS_BATCH) || 50,
+	maxPostsBatch: Number(process.env.MAX_POSTS_BATCH) || 20,
 } as const;
