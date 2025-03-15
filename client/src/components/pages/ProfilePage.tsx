@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Avatar, Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
@@ -12,7 +12,9 @@ import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
 import { ProfileField } from '../ProfileField';
+import { ProfilePicture } from '../ProfilePicture';
 
+const GENERIC_ERROR_MESSAGE = 'Error updating profile picture';
 const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
     username: { title: 'Username', widthPercentage: 60 },
@@ -40,7 +42,6 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                 try {
                     await updateUserProfilePictureById(userId, data.newProfilePicture);
                 } catch (error) {
-                    const GENERIC_ERROR_MESSAGE = 'Error updating profile picture';
                     if (isAxiosError(error)) {
                         setErrorMessage(error.response?.data ?? GENERIC_ERROR_MESSAGE);
                     } else {
@@ -110,8 +111,6 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         }
     };
 
-    const defaultAvatar = <Avatar sx={{ width: 200, height: 200, marginBottom: '10%' }} />;
-
     return (
         <PageBox>
             <PageTitle title='My Profile' />
@@ -140,23 +139,14 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                                 setEditUser({ ...editUser, newProfilePicture: event.target?.files?.[0] });
                             }}
                         />
-                        {isEditing && editUser?.newProfilePicture ? (
-                            <img
-                                src={URL.createObjectURL(editUser.newProfilePicture)}
-                                width={200}
-                                height={200}
-                                style={{ borderRadius: '200px', marginBottom: '10%' }}
-                            />
-                        ) : editUser?.profilePictureURL ? (
-                            <img
-                                src={`${import.meta.env.VITE_SERVER_URL}/${editUser.profilePictureURL}?t=${Date.now()}`} // force refetch for image updates
-                                width={200}
-                                height={200}
-                                style={{ borderRadius: '200px', marginBottom: '10%' }}
-                            />
-                        ) : (
-                            defaultAvatar
-                        )}
+                        <ProfilePicture
+                            profilePictureURL={
+                                isEditing && editUser?.newProfilePicture
+                                    ? URL.createObjectURL(editUser.newProfilePicture)
+                                    : editUser?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${editUser?.profilePictureURL}`
+                            }
+                            sx={{ width: 200, height: 200, marginBottom: '10%' }}
+                        />
                     </Box>
                     {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
                         <ProfileField

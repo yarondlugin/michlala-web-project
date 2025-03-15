@@ -1,11 +1,12 @@
-import { Avatar, Box, Card, Stack, TextField, Typography } from '@mui/material';
+import { Box, Card, Stack, TextField, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useMyDetails } from '../hooks/useMyDetails';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
 import { createNewPost } from '../queries/posts';
 import { NewPost, PostBatchResponse } from '../types/post';
 import { ActionButton } from './ActionButton';
-import { useMyDetails } from '../hooks/useMyDetails';
+import { ProfilePicture } from './ProfilePicture';
 
 type NewPostCardProps = {
     onPost?: () => void;
@@ -88,16 +89,13 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
             }}
         >
             <Box width={'100%'} mx={'auto'} mt={2} display={'flex'} flexDirection={'row'}>
-                {myDetails?.userResult?.profilePictureURL ? (
-                    <img
-                        src={`${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}`}
-                        width={48}
-                        height={48}
-                        style={{ borderRadius: '48px', marginRight: '2%' }}
-                    />
-                ) : (
-                    <Avatar sx={{ width: 48, height: 48, marginRight: 2 }} />
-                )}
+                <ProfilePicture
+                    profilePictureURL={
+                        myDetails?.userResult?.profilePictureURL &&
+                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}`
+                    }
+                    sx={{ marginRight: '2%' }}
+                />
                 <Box display={'flex'} flexDirection={'column'} width={'100%'}>
                     <TextField
                         sx={{ width: '100%' }}

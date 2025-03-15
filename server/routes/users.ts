@@ -8,17 +8,17 @@ export const usersRouter = express.Router();
 const upload = multer({
 	storage: multer.diskStorage({
 		destination: 'public/profilePictures/',
-		filename: (request, file, cb) => {
+		filename: (request, file, callback) => {
 			const { id: userId } = request.params;
 			const ext = path.extname(file.originalname);
-			cb(null, `${userId}${ext}`);
+			callback(null, `${userId}${Date.now()}${ext}`);
 		},
 	}),
-	fileFilter: (_request, file, cb) => {
+	fileFilter: (_request, file, callback) => {
 		if (!path.extname(file.originalname).match(/^\.(jpg|jpeg|png)$/)) {
-			return cb(new Error(NOT_AN_IMAGE_ERROR));
+			return callback(new Error(NOT_AN_IMAGE_ERROR));
 		}
-		cb(null, true);
+		callback(null, true);
 	},
 });
 

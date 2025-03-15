@@ -1,20 +1,20 @@
-import { useState, useMemo, MouseEvent } from 'react';
+import BathtubIcon from '@mui/icons-material/Bathtub';
+import MenuIcon from '@mui/icons-material/Menu';
+import { SxProps } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import BathtubIcon from '@mui/icons-material/Bathtub';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useNavigate } from '@tanstack/react-router';
+import { MouseEvent, useMemo, useState } from 'react';
+import { ProfilePicture } from '../components/ProfilePicture';
 import { useLogout } from './useLogout';
-import { SxProps } from '@mui/material';
 import { useMyDetails } from './useMyDetails';
 import { useRestrictedPage } from './useRestrictedPage';
 
@@ -133,16 +133,12 @@ export const useNavbar = () => () => {
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title='User Settings'>
                             <IconButton onClick={handleOpenUserMenu} sx={{ padding: 0 }}>
-                                {myDetails?.profilePictureURL ? (
-                                    <img
-                                        src={`${import.meta.env.VITE_SERVER_URL}/${myDetails.profilePictureURL}`}
-                                        width={48}
-                                        height={48}
-                                        style={{ borderRadius: '48px', marginRight: '2%' }}
-                                    />
-                                ) : (
-                                    <Avatar alt='User' />
-                                )}
+                                <ProfilePicture
+                                    profilePictureURL={
+                                        myDetails?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${myDetails.profilePictureURL}`
+                                    }
+                                    sx={{ marginRight: '2%' }}
+                                />
                             </IconButton>
                         </Tooltip>
                         <Menu
