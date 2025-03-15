@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, CircularProgress, IconButton, Modal, Stack } from '@mui/material';
+import { Box, Button, CircularProgress, IconButton, Modal, Stack, Typography } from '@mui/material';
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { fetchPostsBatch } from '../../queries/posts';
@@ -68,12 +68,12 @@ export const FeedPage = () => {
                     />
                 </Box>
             </Modal>
-            <IconButton
+            <Button
                 onClick={() => setIsNewPostOpen(true)}
                 size='large'
                 sx={{
-                    height: 'max(4vw, 100px)',
-                    width: 'max(4vw, 100px)',
+                    height: 'max(3vw, 80px)',
+                    width: 'max(6vw, 160px)',
                     position: 'fixed',
                     right: '10vw',
                     bottom: '5vh',
@@ -81,10 +81,12 @@ export const FeedPage = () => {
                     '&:hover': {
                         backgroundColor: '#078ddb',
                     },
+                    boxShadow: 5,
                 }}
+                startIcon={<AddIcon />}
             >
-                <AddIcon sx={{ height: 'max(2.5vw, 60px)', width: 'max(2.5vw, 60px)' }} />
-            </IconButton>
+                <Typography variant='h6'>New Post</Typography>
+            </Button>
         </PageBox>
     );
 };

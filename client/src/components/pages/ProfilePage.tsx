@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { Box, CircularProgress, IconButton } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useMyDetails } from '../../hooks/useMyDetails';
@@ -29,7 +29,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const { isFetching, userResult } = useMyDetails(userId);
 
     const { mutate: updateUser } = useMutation({
-        mutationKey: ['users', userId],
+        mutationKey: ['editUser', userId],
         mutationFn: (data: Partial<User>) => updateUserById(userId, data),
         onMutate: async (newData) => {
             await queryClient.cancelQueries({ queryKey: ['users', userId] });

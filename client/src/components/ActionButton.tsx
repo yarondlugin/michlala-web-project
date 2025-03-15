@@ -5,7 +5,7 @@ import { Variant } from '@mui/material/styles/createTypography';
 type Props = {
     icon?: ReactNode;
     text: string;
-    onClick?: () => void;
+    onClick?: () => void | Promise<void>;
     hoverColor?: string;
     varaint?: Variant;
 };

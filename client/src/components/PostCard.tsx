@@ -66,9 +66,11 @@ export const PostCard = ({ post: { title, content, sender, isNew, senderDetails,
                         <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
                             {title}
                         </Typography>
-                        <Typography variant='body2' sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
-                            @{senderDetails?.[0]?.username || sender}
-                        </Typography>
+                        {!isAI && (
+                            <Typography variant='body2' sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
+                                @{senderDetails?.[0]?.username || sender}
+                            </Typography>
+                        )}
                     </Box>
                     {isAI && (
                         <Tooltip title='AI Generated Post' placement='top'>
