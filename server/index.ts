@@ -54,12 +54,8 @@ const serverRunningCallback = () => console.log(`Server is running on port ${por
 switch (nodeEnv) {
 	case 'test':
 		break;
-	case 'localhost':
-		postGenerationCronJob.start();
-		https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, app).listen(port, serverRunningCallback);
-		break;
 	default:
 		postGenerationCronJob.start();
-		app.listen(port, serverRunningCallback);
+		https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, app).listen(port, serverRunningCallback);
 		break;
 }
