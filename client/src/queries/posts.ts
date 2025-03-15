@@ -15,3 +15,13 @@ export const createNewPost = async (post: NewPost) => {
     const response = await axiosClient.post<Post>(`/posts`, post);
     return response.data;
 };
+
+export const likePost = async (postId: string) => {
+    const response = await axiosClient.put(`/posts/like/${postId}`);
+    return response.data;
+};
+
+export const unlikePost = async (postId: string) => {
+    const response = await axiosClient.put(`/posts/unlike/${postId}`);
+    return response.data;
+};

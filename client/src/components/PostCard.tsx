@@ -1,21 +1,28 @@
 import { Card, Box, Typography, Avatar, Stack, SxProps, Tooltip } from '@mui/material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Post } from '../types/post';
 import { ActionButton } from './ActionButton';
 import ConfettiEffect from 'react-confetti';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { useRestrictedPage } from '../hooks/useRestrictedPage';
+import { useLikePost } from '../hooks/useLikePost';
 
 type Props = {
     post: Post;
     sx?: SxProps;
 };
 
-export const PostCard = ({ post: { title, content, sender, isNew, senderDetails, isAI }, sx }: Props) => {
+export const PostCard = ({ post: { _id: postId, title, content, sender, isNew, senderDetails, isAI, likedUsers }, sx }: Props) => {
     const componentRef = useRef<HTMLDivElement>(null);
     const [componentLocation, setComponentLocation] = useState({ width: 0, height: 0, left: 0, top: 0 });
     const [isConfettiActive, setIsConfettiActive] = useState(isNew);
+    const cookieDetails = useRestrictedPage();
+    const { like, unlike } = useLikePost(postId);
+
+    const isLiked = useMemo(() => !!cookieDetails && !!likedUsers?.includes(cookieDetails.userId), [likedUsers, cookieDetails]);
 
     useEffect(() => {
         if (componentRef.current) {
@@ -107,7 +114,12 @@ export const PostCard = ({ post: { title, content, sender, isNew, senderDetails,
                 {/* Action buttons section */}
                 <Stack direction='row' sx={{ justifyContent: 'space-around', maxWidth: '20%' }}>
                     <ActionButton text='Reply' icon={<ChatBubbleOutlineIcon />} />
-                    <ActionButton text='Like' hoverColor='error.main' icon={<FavoriteBorderIcon />} />
+                    <ActionButton
+                        text={likedUsers?.length.toString() || '0'}
+                        hoverColor='error.main'
+                        onClick={() => (isLiked ? unlike() : like())}
+                        icon={isLiked ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon />}
+                    />
                 </Stack>
             </Card>
         </>

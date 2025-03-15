@@ -8,6 +8,7 @@ export type Post = {
     isNew?: boolean;
     senderDetails?: User[];
     isAI?: boolean;
+    likedUsers?: string[];
 };
 
 export type PostBatchResponse = {
