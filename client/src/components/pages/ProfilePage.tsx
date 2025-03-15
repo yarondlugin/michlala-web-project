@@ -1,16 +1,17 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { Avatar, Box, CircularProgress, IconButton } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { fetchUserById, updateUserById } from '../../queries/users';
-import { User } from '../../types/user';
-import { ProfileField } from '../ProfileField';
-import { PageTitle } from '../PageTitle';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useShowProfilePicture } from '../../hooks/useShowProfilePicture';
+import { fetchUserById, updateUserById, updateUserProfilePictureById } from '../../queries/users';
+import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
+import { PageTitle } from '../PageTitle';
+import { ProfileField } from '../ProfileField';
 
-const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number; disabled?: boolean }>> = {
+const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
     username: { title: 'Username', widthPercentage: 60 },
 };
@@ -22,7 +23,10 @@ type ProfilePageParams = {
 
 export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [editUser, setEditUser] = useState<User>();
+    const [editUser, setEditUser] = useState<EditUser>();
+    const { showProfilePictureModal, setIsShowingProfilePicture } = useShowProfilePicture(editUser);
+    const uploadFileRef = useRef<HTMLInputElement>(null);
+    const profilePictureAnchor = useRef<HTMLImageElement>(null);
     const queryClient = useQueryClient();
 
     const { isFetching, data: userResult } = useQuery({
@@ -32,7 +36,14 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
 
     const { mutate: updateUser } = useMutation({
         mutationKey: ['users', userId],
-        mutationFn: (data: Partial<User>) => updateUserById(userId, data),
+        mutationFn: async (data: Partial<EditUser>) => {
+            if (data?.newProfilePicture) {
+                await updateUserProfilePictureById(userId, data.newProfilePicture);
+            }
+
+            const { newProfilePicture, profilePictureURL, ...dataWithoutProfilePicture } = data;
+            return updateUserById(userId, dataWithoutProfilePicture);
+        },
         onMutate: async (newData) => {
             await queryClient.cancelQueries({ queryKey: ['users', userId] });
 
@@ -58,7 +69,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         setEditUser(userResult);
     }, [userResult]);
 
-    const handleFieldEdit = <T extends keyof User>(field: T, value: User[T]) => {
+    const handleFieldEdit = <T extends keyof EditUser>(field: T, value: EditUser[T]) => {
         if (editUser) {
             setEditUser({ ...editUser, [field]: value });
         }
@@ -80,6 +91,17 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         setIsEditing(false);
     };
 
+    const handleProfilePictureClick = () => {
+        if (isEditing) {
+            uploadFileRef.current?.click();
+            return;
+        }
+
+        setIsShowingProfilePicture(true);
+    };
+
+    const defaultAvatar = <Avatar sx={{ width: 200, height: 200, marginBottom: '10%' }} />;
+
     return (
         <PageBox>
             <PageTitle title='My Profile' />
@@ -93,9 +115,40 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     textAlign={'center'}
                     sx={{ width: 'max(40vw, 500px)' }}
                 >
-                    <Typography fontSize={48} marginBottom={'20%'}>
-                        My Profile
-                    </Typography>
+                    <Box onClick={handleProfilePictureClick} sx={{ cursor: 'pointer' }}>
+                        <input
+                            ref={uploadFileRef}
+                            style={{ display: 'none' }}
+                            type='file'
+                            accept='image/png, image/jpeg'
+                            name='profilePicture'
+                            onChange={(event) => {
+                                if (!editUser) {
+                                    return;
+                                }
+
+                                setEditUser({ ...editUser, newProfilePicture: event.target?.files?.[0] });
+                            }}
+                        />
+                        {isEditing && editUser?.newProfilePicture ? (
+                            <img
+                                src={URL.createObjectURL(editUser.newProfilePicture)}
+                                width={200}
+                                height={200}
+                                style={{ borderRadius: '200px', marginBottom: '10%' }}
+                            />
+                        ) : editUser?.profilePictureURL ? (
+                            <img
+                                ref={profilePictureAnchor}
+                                src={`${import.meta.env.VITE_SERVER_URL}/${editUser.profilePictureURL}?t=${Date.now()}`} // force refetch for image updates
+                                width={200}
+                                height={200}
+                                style={{ borderRadius: '200px', marginBottom: '10%' }}
+                            />
+                        ) : (
+                            defaultAvatar
+                        )}
+                    </Box>
                     {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
                         <ProfileField
                             key={field}
@@ -128,6 +181,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     )}
                 </Box>
             )}
+            {showProfilePictureModal}
         </PageBox>
     );
 };

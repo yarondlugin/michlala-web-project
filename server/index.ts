@@ -15,6 +15,7 @@ import { startDB } from './services/db';
 import { swagger } from './swagger';
 import { appConfig } from './utils/appConfig';
 import { postGenerationCronJob } from './services/ai';
+import path from 'path';
 
 dotenv.config();
 const {
@@ -35,6 +36,7 @@ app.use(
 	})
 );
 app.use(cookieParser());
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 startDB();
 

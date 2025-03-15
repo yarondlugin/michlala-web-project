@@ -1,12 +1,31 @@
 import express from 'express';
-import { getUserByDetails, getUserById, updateUserById, deleteUserById } from '../controllers/users';
-import { createErrorHandler } from '../utils/createErrorHandler';
+import multer from 'multer';
+import { deleteUserById, getUserByDetails, getUserById, updateUserById, updateUserProfilePictureById } from '../controllers/users';
+import { createErrorHandler, NOT_AN_IMAGE_ERROR } from '../utils/createErrorHandler';
+import path from 'path';
 
 export const usersRouter = express.Router();
+const upload = multer({
+	storage: multer.diskStorage({
+		destination: 'public/profilePictures/',
+		filename: (request, file, cb) => {
+			const { id: userId } = request.params;
+			const ext = path.extname(file.originalname);
+			cb(null, `${userId}${ext}`);
+		},
+	}),
+	fileFilter: (_request, file, cb) => {
+		if (!path.extname(file.originalname).match(/^\.(jpg|jpeg|png)$/)) {
+			return cb(new Error(NOT_AN_IMAGE_ERROR));
+		}
+		cb(null, true);
+	},
+});
 
 usersRouter.get('/', getUserByDetails);
 usersRouter.get('/:id', getUserById);
 usersRouter.put('/:id', updateUserById);
+usersRouter.put('/:id/profilePicture', upload.single('profilePicture'), updateUserProfilePictureById);
 usersRouter.delete('/:id', deleteUserById);
 usersRouter.use(createErrorHandler('users'));
 
