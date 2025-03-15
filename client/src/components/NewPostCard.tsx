@@ -20,7 +20,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
     const [postContent, setPostContent] = useState<string>('');
     const queryClient = useQueryClient();
     const { mutate: createPost } = useMutation({
-        mutationKey: ['posts'],
+        mutationKey: ['newPost'],
         mutationFn: (post: NewPost) => createNewPost(post),
         onMutate: async (newPost) => {
             onPost?.();
@@ -30,23 +30,23 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                 return {
                     ...oldData,
                     pages: oldData.pages.map((page, index) => {
-                        if (index === 0) {
-                            return {
-                                ...page,
-                                posts: [
-                                    {
-                                        ...newPost,
-                                        _id: new Date().getTime().toString(),
-                                        sender: cookieDetails?.userId,
-                                        senderDetails: [{ username: myDetails?.userResult?.username }],
-                                        isNew: true,
-                                    },
-                                    ...page.posts,
-                                ],
-                            };
+                        if (index !== 0) {
+                            return page;
                         }
 
-                        return page;
+                        return {
+                            ...page,
+                            posts: [
+                                {
+                                    ...newPost,
+                                    _id: new Date().getTime().toString(),
+                                    sender: cookieDetails?.userId,
+                                    senderDetails: [{ username: myDetails?.userResult?.username }],
+                                    isNew: true,
+                                },
+                                ...page.posts,
+                            ],
+                        };
                     }),
                 };
             });
@@ -100,11 +100,9 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                             setNewPostError(null);
                         }}
                     />
-                    {newPostError && (
-                        <Typography variant='body2' color='error'>
-                            {newPostError}
-                        </Typography>
-                    )}
+                    <Typography variant='body2' color='error'>
+                        {newPostError ?? '‎' /*Invisible character so the error message is always rendered*/}
+                    </Typography>
                     <TextField
                         multiline={true}
                         minRows={3}
@@ -119,7 +117,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                 </Box>
             </Box>
 
-            <Stack direction='row-reverse' sx={{ justifyContent: 'flex-start', marginTop: 2 }}>
+            <Stack direction='row' sx={{ justifyContent: 'flex-end', marginTop: 2 }}>
                 <ActionButton varaint='button' text='Post' onClick={handlePost} />
             </Stack>
         </Card>
