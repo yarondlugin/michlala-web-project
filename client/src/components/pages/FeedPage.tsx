@@ -50,7 +50,7 @@ export const FeedPage = () => {
                 {isLoading && !isFetchingNextPage ? <CircularProgress size={200} /> : postsComponents}
                 {isFetchingNextPage && <CircularProgress size={50} />}
             </Stack>
-            <Modal open={isNewPostOpen} onClose={() => setIsNewPostOpen(false)}>
+            <Modal open={isNewPostOpen} onClose={() => setIsNewPostOpen(false)} disableScrollLock>
                 <Box
                     sx={{
                         position: 'absolute',

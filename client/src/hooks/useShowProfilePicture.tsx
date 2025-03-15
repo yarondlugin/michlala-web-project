@@ -8,7 +8,7 @@ export const useShowProfilePicture = (user?: User) => {
     return {
         setIsShowingProfilePicture,
         showProfilePictureModal: user ? (
-            <Modal open={isShowingProfilePicture} onClose={() => setIsShowingProfilePicture(false)}>
+            <Modal open={isShowingProfilePicture} onClose={() => setIsShowingProfilePicture(false)} disableScrollLock>
                 <img
                     src={`${import.meta.env.VITE_SERVER_URL}/${user.profilePictureURL}?t=${Date.now()}`} // force refetch for image updates
                     style={{

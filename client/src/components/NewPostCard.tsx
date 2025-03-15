@@ -13,7 +13,7 @@ type NewPostCardProps = {
 
 export const NewPostCard = ({ onPost }: NewPostCardProps) => {
     const cookieDetails = useRestrictedPage();
-    const myDetails = cookieDetails && useMyDetails(cookieDetails?.userId);
+    const myDetails = useMyDetails(cookieDetails?.userId);
 
     const [newPostError, setNewPostError] = useState<string | null>(null);
     const [postTitle, setPostTitle] = useState<string>('');
@@ -88,7 +88,16 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
             }}
         >
             <Box width={'100%'} mx={'auto'} mt={2} display={'flex'} flexDirection={'row'}>
-                <Avatar sx={{ width: 48, height: 48, marginRight: 2 }} />
+                {myDetails?.userResult?.profilePictureURL ? (
+                    <img
+                        src={`${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}`}
+                        width={48}
+                        height={48}
+                        style={{ borderRadius: '48px', marginRight: '2%' }}
+                    />
+                ) : (
+                    <Avatar sx={{ width: 48, height: 48, marginRight: 2 }} />
+                )}
                 <Box display={'flex'} flexDirection={'column'} width={'100%'}>
                     <TextField
                         sx={{ width: '100%' }}

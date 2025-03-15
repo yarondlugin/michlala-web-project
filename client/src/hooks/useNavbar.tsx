@@ -15,6 +15,8 @@ import BathtubIcon from '@mui/icons-material/Bathtub';
 import { useNavigate } from '@tanstack/react-router';
 import { useLogout } from './useLogout';
 import { SxProps } from '@mui/material';
+import { useMyDetails } from './useMyDetails';
+import { useRestrictedPage } from './useRestrictedPage';
 
 type MenuItem = {
     title: string;
@@ -31,6 +33,8 @@ const LOGO_STYLES: SxProps = { marginRight: 2, fontFamily: 'Julius Sans One', le
 export const useNavbar = () => () => {
     const [navbarAnchorElement, setNavbarAnchorElement] = useState<null | HTMLElement>(null);
     const [userAnchorElement, setUserAnchorElement] = useState<null | HTMLElement>(null);
+    const cookieDetails = useRestrictedPage();
+    const { userResult: myDetails } = useMyDetails(cookieDetails?.userId);
 
     const logout = useLogout();
     const navigate = useNavigate();
@@ -86,6 +90,7 @@ export const useNavbar = () => () => {
                             open={Boolean(navbarAnchorElement)}
                             onClose={handleCloseNavbarMenu}
                             sx={XS_DISPLAY}
+                            disableScrollLock
                         >
                             {navbarMenuItems.map(({ title, onClick }) => (
                                 <MenuItem key={title} onClick={onClick}>
@@ -128,7 +133,16 @@ export const useNavbar = () => () => {
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title='User Settings'>
                             <IconButton onClick={handleOpenUserMenu} sx={{ padding: 0 }}>
-                                <Avatar alt='User' src='/static/images/avatar/user.jpg' />
+                                {myDetails?.profilePictureURL ? (
+                                    <img
+                                        src={`${import.meta.env.VITE_SERVER_URL}/${myDetails.profilePictureURL}`}
+                                        width={48}
+                                        height={48}
+                                        style={{ borderRadius: '48px', marginRight: '2%' }}
+                                    />
+                                ) : (
+                                    <Avatar alt='User' />
+                                )}
                             </IconButton>
                         </Tooltip>
                         <Menu
@@ -139,6 +153,7 @@ export const useNavbar = () => () => {
                             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                             open={Boolean(userAnchorElement)}
                             onClose={handleCloseUserMenu}
+                            disableScrollLock
                         >
                             {settingsMenuItems.map(({ title, onClick }) => (
                                 <MenuItem key={title} onClick={onClick}>
