@@ -8,7 +8,7 @@ export const useLikePost = (postId: string) => {
     const userId = useRestrictedPage()?.userId;
 
     const { mutate: like } = useMutation({
-        mutationKey: ['posts', postId],
+        mutationKey: ['likePost', postId],
         mutationFn: async () => await likePost(postId),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
@@ -21,23 +21,23 @@ export const useLikePost = (postId: string) => {
                 return {
                     ...oldData,
                     pages: oldData.pages.map((page) => {
-                        if (page.posts.some((post) => post._id === postId)) {
-                            return {
-                                ...page,
-                                posts: page.posts.map((post) => {
-                                    if (post._id === postId) {
-                                        return {
-                                            ...post,
-                                            likedUsers: [...(post.likedUsers || []), userId],
-                                        };
-                                    }
-
-                                    return post;
-                                }),
-                            };
+                        if (!page.posts.some((post) => post._id === postId)) {
+                            return page;
                         }
 
-                        return page;
+                        return {
+                            ...page,
+                            posts: page.posts.map((post) => {
+                                if (post._id !== postId) {
+                                    return post;
+                                }
+
+                                return {
+                                    ...post,
+                                    likedUsers: [...(post.likedUsers || []), userId],
+                                };
+                            }),
+                        };
                     }),
                 };
             });
@@ -46,7 +46,7 @@ export const useLikePost = (postId: string) => {
     });
 
     const { mutate: unlike } = useMutation({
-        mutationKey: ['posts', postId],
+        mutationKey: ['unlikePost', postId],
         mutationFn: async () => await unlikePost(postId),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
@@ -59,23 +59,23 @@ export const useLikePost = (postId: string) => {
                 return {
                     ...oldData,
                     pages: oldData.pages.map((page) => {
-                        if (page.posts.some((post) => post._id === postId)) {
-                            return {
-                                ...page,
-                                posts: page.posts.map((post) => {
-                                    if (post._id === postId) {
-                                        return {
-                                            ...post,
-                                            likedUsers: post.likedUsers?.filter((id) => id !== userId),
-                                        };
-                                    }
-
-                                    return post;
-                                }),
-                            };
+                        if (!page.posts.some((post) => post._id === postId)) {
+                            return page;
                         }
 
-                        return page;
+                        return {
+                            ...page,
+                            posts: page.posts.map((post) => {
+                                if (post._id !== postId) {
+                                    return post;
+                                }
+
+                                return {
+                                    ...post,
+                                    likedUsers: post.likedUsers?.filter((id) => id !== userId),
+                                };
+                            }),
+                        };
                     }),
                 };
             });
