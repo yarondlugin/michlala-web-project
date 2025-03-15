@@ -24,6 +24,10 @@ const userSchemaDefinition = {
 		default: [],
 		allowFilter: false,
 	},
+	profilePictureURL: {
+		type: String,
+		allowFilter: false,
+	},
 } as const;
 
 const userSchema = new Schema(userSchemaDefinition);
@@ -76,6 +80,9 @@ export type User = TypeWithId<InferRawDocType<typeof userSchemaDefinition>>;
  *           items:
  *             type: string
  *           description: The currently active refresh tokens of the user.
+ *         profilePictureURL:
+ *           type: string
+ *           description: The URL of the user's profile picture.
  *       example:
  *         username: "shlomi"
  *         email: "shlomi@gmail.com"

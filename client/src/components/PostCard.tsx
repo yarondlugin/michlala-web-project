@@ -1,14 +1,16 @@
-import { Card, Box, Typography, Avatar, Stack, SxProps, Tooltip } from '@mui/material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { Box, Card, Stack, SxProps, Tooltip, Typography } from '@mui/material';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import ConfettiEffect from 'react-confetti';
+import { AI_PROFILE_PICTURE } from '../consts';
+import { useLikePost } from '../hooks/useLikePost';
+import { useRestrictedPage } from '../hooks/useRestrictedPage';
 import { Post } from '../types/post';
 import { ActionButton } from './ActionButton';
-import ConfettiEffect from 'react-confetti';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { useRestrictedPage } from '../hooks/useRestrictedPage';
-import { useLikePost } from '../hooks/useLikePost';
+import { ProfilePicture } from './ProfilePicture';
 
 type Props = {
     post: Post;
@@ -68,7 +70,16 @@ export const PostCard = ({ post: { _id: postId, title, content, sender, isNew, s
             >
                 {/* Title section */}
                 <Box sx={{ display: 'flex' }}>
-                    <Avatar sx={{ width: 48, height: 48, marginRight: 2 }} />
+                    <ProfilePicture
+                        profilePictureURL={
+                            isAI
+                                ? AI_PROFILE_PICTURE
+                                : senderDetails?.[0]?.profilePictureURL &&
+                                  `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}`
+                        }
+                        sx={{ marginRight: '2%' }}
+                    />
+
                     <Box>
                         <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
                             {title}
