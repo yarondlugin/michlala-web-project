@@ -2,15 +2,16 @@ import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { Avatar, Box, CircularProgress, IconButton, Typography } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useMyDetails } from '../../hooks/useMyDetails';
 import { useShowProfilePicture } from '../../hooks/useShowProfilePicture';
-import { fetchUserById, updateUserById, updateUserProfilePictureById } from '../../queries/users';
+import { updateUserById, updateUserProfilePictureById } from '../../queries/users';
 import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
 import { ProfileField } from '../ProfileField';
-import { isAxiosError } from 'axios';
 
 const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
@@ -31,13 +32,10 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const profilePictureAnchor = useRef<HTMLImageElement>(null);
     const queryClient = useQueryClient();
 
-    const { isFetching, data: userResult } = useQuery({
-        queryKey: ['users', userId],
-        queryFn: ({ queryKey }) => fetchUserById(queryKey[1] as string),
-    });
+    const { isFetching, userResult } = useMyDetails(userId);
 
     const { mutate: updateUser } = useMutation({
-        mutationKey: ['users', userId],
+        mutationKey: ['editUser', userId],
         mutationFn: async (data: Partial<EditUser>) => {
             if (data?.newProfilePicture) {
                 try {
