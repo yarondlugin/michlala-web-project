@@ -29,7 +29,6 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { showProfilePictureModal, setIsShowingProfilePicture } = useShowProfilePicture(editUser);
     const uploadFileRef = useRef<HTMLInputElement>(null);
-    const profilePictureAnchor = useRef<HTMLImageElement>(null);
     const queryClient = useQueryClient();
 
     const { isFetching, userResult } = useMyDetails(userId);
@@ -106,8 +105,9 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
             uploadFileRef.current?.click();
             return;
         }
-
-        setIsShowingProfilePicture(true);
+        if (editUser?.profilePictureURL) {
+            setIsShowingProfilePicture(true);
+        }
     };
 
     const defaultAvatar = <Avatar sx={{ width: 200, height: 200, marginBottom: '10%' }} />;
@@ -149,7 +149,6 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                             />
                         ) : editUser?.profilePictureURL ? (
                             <img
-                                ref={profilePictureAnchor}
                                 src={`${import.meta.env.VITE_SERVER_URL}/${editUser.profilePictureURL}?t=${Date.now()}`} // force refetch for image updates
                                 width={200}
                                 height={200}

@@ -1,10 +1,12 @@
+import { User } from './user';
+
 export type Post = {
     _id: string;
     title: string;
     content?: string;
     sender: string;
     isNew?: boolean;
-    senderDetails?: { username: string }[];
+    senderDetails?: User[];
     isAI?: boolean;
 };
 
