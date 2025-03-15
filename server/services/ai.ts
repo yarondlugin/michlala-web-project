@@ -5,7 +5,7 @@ import { createCronJob } from '../utils/cronJob';
 
 const JSON_REGEX = /\[[\s\S]*\]/;
 
-const {batchAmount, schedule} = appConfig.postGeneration;
+const { batchAmount, schedule } = appConfig.postGeneration;
 
 const POST_GENERATION_PROMPT = `
 Generate ${batchAmount} posts, where each posts is 2-3 sentences long about a random topic from the last month.
@@ -40,9 +40,9 @@ const generateAIPosts = async () => {
 
 	const generatedPosts: Pick<Post, 'title' | 'content'>[] = JSON.parse(regexMatch[0]);
 
-	await postModel.create(generatedPosts.map((post) => ({ ...post, sender: '@ai-generated' })));
+	await postModel.create(generatedPosts.map((post) => ({ ...post, sender: 'ai-generated', isAI: true })));
 
-	console.log(`Successfully generated ${batchAmount} posts with AI`)
+	console.log(`Successfully generated ${batchAmount} posts with AI`);
 };
 
-export const postGenerationCronJob = createCronJob({schedule: schedule, jobFunction: generateAIPosts})
+export const postGenerationCronJob = createCronJob({ schedule: schedule, jobFunction: generateAIPosts });

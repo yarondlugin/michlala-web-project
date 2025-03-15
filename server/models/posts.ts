@@ -11,6 +11,10 @@ const postSchemaDefinition = {
 		required: true,
 	},
 	content: String,
+	isAI: {
+		type: Boolean,
+		default: false,
+	},
 } as const;
 
 const postSchema = new Schema(postSchemaDefinition);

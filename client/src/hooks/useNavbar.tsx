@@ -71,11 +71,11 @@ export const useNavbar = () => () => {
     }, [logout]);
 
     return (
-        <AppBar position="sticky" sx={{ width: '100%', top: 0 }}>
+        <AppBar position='sticky' sx={{ width: '100%', top: 0, marginBottom: '2%' }}>
             <Container>
                 <Toolbar disableGutters>
                     <Box sx={{ flexGrow: 1, ...XS_DISPLAY }}>
-                        <IconButton size="large" onClick={handleOpenNavbarMenu}>
+                        <IconButton size='large' onClick={handleOpenNavbarMenu}>
                             <MenuIcon />
                         </IconButton>
                         <Menu
@@ -96,12 +96,12 @@ export const useNavbar = () => () => {
                     </Box>
                     <BathtubIcon sx={{ ...XS_DISPLAY, marginRight: 1 }} />
                     <Typography
-                        variant="h5"
+                        variant='h5'
                         noWrap
                         sx={{
                             ...XS_DISPLAY,
                             ...LOGO_STYLES,
-							flexGrow: 1,
+                            flexGrow: 1,
                         }}
                     >
                         SHOWER
@@ -109,11 +109,11 @@ export const useNavbar = () => () => {
 
                     <BathtubIcon sx={{ ...MD_DISPLAY, marginRight: 1 }} />
                     <Typography
-                        variant="h6"
+                        variant='h6'
                         noWrap
                         sx={{
                             ...MD_DISPLAY,
-                            ...LOGO_STYLES
+                            ...LOGO_STYLES,
                         }}
                     >
                         SHOWER THOUGHTS
@@ -126,9 +126,9 @@ export const useNavbar = () => () => {
                         ))}
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="User Settings">
+                        <Tooltip title='User Settings'>
                             <IconButton onClick={handleOpenUserMenu} sx={{ padding: 0 }}>
-                                <Avatar alt="User" src="/static/images/avatar/user.jpg" />
+                                <Avatar alt='User' src='/static/images/avatar/user.jpg' />
                             </IconButton>
                         </Tooltip>
                         <Menu
