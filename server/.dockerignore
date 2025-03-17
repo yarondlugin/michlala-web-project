@@ -1,0 +1,7 @@
+node_modules
+localCerts
+coverage
+ctrf
+build
+.git
+.env
