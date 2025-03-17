@@ -6,6 +6,9 @@ module.exports = {
             name: `client`,
             script: 'pnpm',
             args: 'preview',
+            env: {
+                NODE_ENV: 'production',
+            },
         },
     ],
 };
