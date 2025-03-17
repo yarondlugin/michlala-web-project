@@ -4,8 +4,8 @@ module.exports = {
     apps: [
         {
             name: `client`,
-			      script: "pnpm",
-      		  args: "preview"
+            script: 'pnpm',
+            args: 'preview',
         },
     ],
 };
