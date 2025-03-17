@@ -18,6 +18,10 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 4000
+ENV VITE_SERVER_URL=$VITE_SERVER_URL
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_POSTS_PER_PAGE=$VITE_POSTS_PER_PAGE
+
+EXPOSE 5173
 
 CMD ["nginx", "-g", "daemon off;"]
