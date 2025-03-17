@@ -6,6 +6,7 @@ import mkcert from 'vite-plugin-mkcert';
 export default defineConfig({
     plugins: [TanStackRouterVite({ autoCodeSplitting: true }), mkcert(), react()],
     server: {
-        port: 5173,
+        port: 4000,
+		https: true,
     },
 });
