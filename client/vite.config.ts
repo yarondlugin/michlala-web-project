@@ -7,6 +7,6 @@ export default defineConfig({
     plugins: [TanStackRouterVite({ autoCodeSplitting: true }), mkcert(), react()],
     server: {
         port: 5173,
-		https: true,
+        https: true,
     },
 });
