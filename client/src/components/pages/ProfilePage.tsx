@@ -1,17 +1,21 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Box, CircularProgress, IconButton } from '@mui/material';
+import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useMyDetails } from '../../hooks/useMyDetails';
-import { updateUserById } from '../../queries/users';
-import { User } from '../../types/user';
+import { useShowProfilePicture } from '../../hooks/useShowProfilePicture';
+import { updateUserById, updateUserProfilePictureById } from '../../queries/users';
+import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
 import { ProfileField } from '../ProfileField';
+import { ProfilePicture } from '../ProfilePicture';
 
-const EDITABLE_USER_DETAILS: Partial<Record<keyof User, { title: string; widthPercentage: number; disabled?: boolean }>> = {
+const GENERIC_ERROR_MESSAGE = 'Error updating profile picture';
+const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {
     email: { title: 'Email', widthPercentage: 60, disabled: true },
     username: { title: 'Username', widthPercentage: 60 },
 };
@@ -23,14 +27,32 @@ type ProfilePageParams = {
 
 export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [editUser, setEditUser] = useState<User>();
+    const [editUser, setEditUser] = useState<EditUser>();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const { showProfilePictureModal, setIsShowingProfilePicture } = useShowProfilePicture(editUser);
+    const uploadFileRef = useRef<HTMLInputElement>(null);
     const queryClient = useQueryClient();
 
     const { isFetching, userResult } = useMyDetails(userId);
 
     const { mutate: updateUser } = useMutation({
         mutationKey: ['editUser', userId],
-        mutationFn: (data: Partial<User>) => updateUserById(userId, data),
+        mutationFn: async (data: Partial<EditUser>) => {
+            if (data?.newProfilePicture) {
+                try {
+                    await updateUserProfilePictureById(userId, data.newProfilePicture);
+                } catch (error) {
+                    if (isAxiosError(error)) {
+                        setErrorMessage(error.response?.data ?? GENERIC_ERROR_MESSAGE);
+                    } else {
+                        setErrorMessage(GENERIC_ERROR_MESSAGE);
+                    }
+                }
+            }
+
+            const { newProfilePicture, profilePictureURL, ...dataWithoutProfilePicture } = data;
+            return updateUserById(userId, dataWithoutProfilePicture);
+        },
         onMutate: async (newData) => {
             await queryClient.cancelQueries({ queryKey: ['users', userId] });
 
@@ -56,7 +78,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
         setEditUser(userResult);
     }, [userResult]);
 
-    const handleFieldEdit = <T extends keyof User>(field: T, value: User[T]) => {
+    const handleFieldEdit = <T extends keyof EditUser>(field: T, value: EditUser[T]) => {
         if (editUser) {
             setEditUser({ ...editUser, [field]: value });
         }
@@ -64,6 +86,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
 
     const handleEnterEditMode = () => {
         setIsEditing(true);
+        setErrorMessage(null);
     };
 
     const handleCancelEditMode = () => {
@@ -76,6 +99,16 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
             updateUser(editUser);
         }
         setIsEditing(false);
+    };
+
+    const handleProfilePictureClick = () => {
+        if (isEditing) {
+            uploadFileRef.current?.click();
+            return;
+        }
+        if (editUser?.profilePictureURL) {
+            setIsShowingProfilePicture(true);
+        }
     };
 
     return (
@@ -91,6 +124,30 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     textAlign={'center'}
                     sx={{ width: 'max(40vw, 500px)' }}
                 >
+                    <Box onClick={handleProfilePictureClick} sx={{ cursor: 'pointer' }}>
+                        <input
+                            ref={uploadFileRef}
+                            style={{ display: 'none' }}
+                            type='file'
+                            accept='image/png, image/jpeg'
+                            name='profilePicture'
+                            onChange={(event) => {
+                                if (!editUser) {
+                                    return;
+                                }
+
+                                setEditUser({ ...editUser, newProfilePicture: event.target?.files?.[0] });
+                            }}
+                        />
+                        <ProfilePicture
+                            profilePictureURL={
+                                isEditing && editUser?.newProfilePicture
+                                    ? URL.createObjectURL(editUser.newProfilePicture)
+                                    : editUser?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${editUser?.profilePictureURL}`
+                            }
+                            sx={{ width: 200, height: 200, marginBottom: '10%' }}
+                        />
+                    </Box>
                     {Object.entries(EDITABLE_USER_DETAILS).map(([field, { title, widthPercentage, disabled }]) => (
                         <ProfileField
                             key={field}
@@ -103,6 +160,9 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                             }
                         />
                     ))}
+                    <Typography variant='body2' color='error'>
+                        {errorMessage ?? '‎' /*Invisible character so the error message is always rendered*/}
+                    </Typography>
                     {isEditable && (
                         <Box marginX={'auto'} marginTop={'10%'} marginBottom={'3%'}>
                             {isEditing ? (
@@ -123,6 +183,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                     )}
                 </Box>
             )}
+            {showProfilePictureModal}
         </PageBox>
     );
 };

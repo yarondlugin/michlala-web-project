@@ -72,6 +72,37 @@ export const updateUserById = async (request: Request<{ id: string }>, response:
 	}
 };
 
+export const updateUserProfilePictureById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
+	const { id: userId } = request.params;
+	const newProfilePicture = request.file;
+
+	if (!isValidObjectId(userId)) {
+		response.status(httpStatus.BAD_REQUEST).send(`Invalid id ${userId}`);
+		return;
+	}
+	if (!newProfilePicture) {
+		response.status(httpStatus.BAD_REQUEST).send('No picture provided');
+		return;
+	}
+
+	try {
+		const updatedUser = await userModel
+			.findByIdAndUpdate(userId, {
+				profilePictureURL: `${newProfilePicture.destination}${newProfilePicture.filename}`,
+			})
+			.select(USER_FIELDS_FILTER);
+
+		if (!updatedUser) {
+			response.status(httpStatus.NOT_FOUND).send(`User with id ${userId} not found`);
+			return;
+		}
+
+		response.status(httpStatus.OK).send(`User ${userId} updated`);
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const deleteUserById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
 	const { id: userId } = request.params;
 

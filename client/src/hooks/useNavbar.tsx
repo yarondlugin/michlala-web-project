@@ -1,20 +1,22 @@
-import { useState, useMemo, MouseEvent } from 'react';
+import BathtubIcon from '@mui/icons-material/Bathtub';
+import MenuIcon from '@mui/icons-material/Menu';
+import { SxProps } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import BathtubIcon from '@mui/icons-material/Bathtub';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useNavigate } from '@tanstack/react-router';
+import { MouseEvent, useMemo, useState } from 'react';
+import { ProfilePicture } from '../components/ProfilePicture';
 import { useLogout } from './useLogout';
-import { SxProps } from '@mui/material';
+import { useMyDetails } from './useMyDetails';
+import { useRestrictedPage } from './useRestrictedPage';
 
 type MenuItem = {
     title: string;
@@ -31,6 +33,8 @@ const LOGO_STYLES: SxProps = { marginRight: 2, fontFamily: 'Julius Sans One', le
 export const useNavbar = () => () => {
     const [navbarAnchorElement, setNavbarAnchorElement] = useState<null | HTMLElement>(null);
     const [userAnchorElement, setUserAnchorElement] = useState<null | HTMLElement>(null);
+    const cookieDetails = useRestrictedPage();
+    const { userResult: myDetails } = useMyDetails(cookieDetails?.userId);
 
     const logout = useLogout();
     const navigate = useNavigate();
@@ -86,6 +90,7 @@ export const useNavbar = () => () => {
                             open={Boolean(navbarAnchorElement)}
                             onClose={handleCloseNavbarMenu}
                             sx={XS_DISPLAY}
+                            disableScrollLock
                         >
                             {navbarMenuItems.map(({ title, onClick }) => (
                                 <MenuItem key={title} onClick={onClick}>
@@ -128,7 +133,12 @@ export const useNavbar = () => () => {
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title='User Settings'>
                             <IconButton onClick={handleOpenUserMenu} sx={{ padding: 0 }}>
-                                <Avatar alt='User' src='/static/images/avatar/user.jpg' />
+                                <ProfilePicture
+                                    profilePictureURL={
+                                        myDetails?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${myDetails.profilePictureURL}`
+                                    }
+                                    sx={{ marginRight: '2%' }}
+                                />
                             </IconButton>
                         </Tooltip>
                         <Menu
@@ -139,6 +149,7 @@ export const useNavbar = () => () => {
                             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                             open={Boolean(userAnchorElement)}
                             onClose={handleCloseUserMenu}
+                            disableScrollLock
                         >
                             {settingsMenuItems.map(({ title, onClick }) => (
                                 <MenuItem key={title} onClick={onClick}>
