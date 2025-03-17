@@ -26,4 +26,4 @@ COPY --from=build /app/build /app/build
 
 EXPOSE 8080
 
-CMD ["node", "src/index.js"]
+CMD ["node", "build/index.js"]
