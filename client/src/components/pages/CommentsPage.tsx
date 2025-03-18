@@ -9,6 +9,7 @@ import { CommentCard } from '../CommentCard';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
 import { PostCard } from '../PostCard';
+import { NewCommentCard } from '../NewCommentCard';
 
 type Props = {
     postId: string;
@@ -68,6 +69,7 @@ export const CommentsPage = ({ postId }: Props) => {
             ) : (
                 <Stack direction='column' spacing={3} sx={{ width: '45%', alignItems: 'end' }}>
                     <PostCard post={post} sx={{ width: '100%' }} />
+					<NewCommentCard post={post} />
                     {isLoading && !isFetchingNextPage ? <CircularProgress size={200} /> : commentsComponents}
                     {isFetchingNextPage && <CircularProgress size={50} />}
                 </Stack>

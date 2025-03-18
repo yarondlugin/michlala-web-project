@@ -8,6 +8,7 @@ interface ImportMetaEnv {
     readonly VITE_AI_PROFILE_PICTURE?: string;
     readonly VITE_KEY_PATH: string;
     readonly VITE_CERT_PATH: string;
+    readonly VITE_CONFETTI_DURATION_MS: number;
 }
 
 interface ImportMeta {

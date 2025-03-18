@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import ConfettiEffect from 'react-confetti';
 import { Comment } from '../types/comment';
 import { ProfilePicture } from './ProfilePicture';
+import { CONFETTI_DURATION } from '../consts';
 
 type Props = {
     comment: Comment;
@@ -23,7 +24,7 @@ export const CommentCard = ({ comment: { content, sender, isNew, senderDetails }
         if (isConfettiActive) {
             setTimeout(() => {
                 setIsConfettiActive(false);
-            }, 4000);
+            }, CONFETTI_DURATION);
         }
     }, []);
 

@@ -5,7 +5,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { Box, Card, Stack, SxProps, Tooltip, Typography } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ConfettiEffect from 'react-confetti';
-import { AI_PROFILE_PICTURE } from '../consts';
+import { AI_PROFILE_PICTURE, CONFETTI_DURATION } from '../consts';
 import { useLikePost } from '../hooks/useLikePost';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
 import { Post } from '../types/post';
@@ -18,7 +18,7 @@ type Props = {
     onReply?: () => void | Promise<void>;
 };
 
-export const PostCard = ({ post: { _id: postId, title, content, sender, isNew, senderDetails, isAI, likedUsers }, sx, onReply }: Props) => {
+export const PostCard = ({ post: { _id: postId, title, content, sender, isNew, senderDetails, isAI, likedUsers, commentsCount }, sx, onReply }: Props) => {
     const componentRef = useRef<HTMLDivElement>(null);
     const [componentLocation, setComponentLocation] = useState({ width: 0, height: 0, left: 0, top: 0 });
     const [isConfettiActive, setIsConfettiActive] = useState(isNew);
@@ -36,7 +36,7 @@ export const PostCard = ({ post: { _id: postId, title, content, sender, isNew, s
         if (isConfettiActive) {
             setTimeout(() => {
                 setIsConfettiActive(false);
-            }, 4000);
+            }, CONFETTI_DURATION);
         }
     }, []);
 
@@ -107,7 +107,7 @@ export const PostCard = ({ post: { _id: postId, title, content, sender, isNew, s
 
                 {/* Action buttons section */}
                 <Stack direction='row' sx={{ justifyContent: 'space-around', maxWidth: '20%' }}>
-                    <ActionButton text='Reply' icon={<ChatBubbleOutlineIcon />} onClick={onReply} />
+                    <ActionButton text={commentsCount ? `${commentsCount} Replies` : 'Reply'} icon={<ChatBubbleOutlineIcon />} onClick={onReply} />
                     <ActionButton
                         text={likedUsers?.length.toString() || '0'}
                         hoverColor='error.main'

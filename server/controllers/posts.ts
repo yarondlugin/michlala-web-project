@@ -54,7 +54,20 @@ export const getAllPosts = async (
 					as: 'senderDetails',
 				},
 			},
-			{ $project: { objectIdSender: 0 } },
+			{
+				$lookup: {
+					from: 'comments',
+					localField: '_id',
+					foreignField: 'postId',
+					as: 'comments',
+				},
+			},
+			{
+				$addFields: {
+					commentsCount: { $size: '$comments' },
+				},
+			},
+			{ $project: { objectIdSender: 0, comments: 0 } },
 			{ $sort: { _id: -1 } },
 			{ $limit: limit ?? 0 },
 		]);
@@ -96,7 +109,20 @@ export const getPostById = async (request: Request<{ id: string }>, response: Re
 					as: 'senderDetails',
 				},
 			},
-			{ $project: { objectIdSender: 0 } },
+			{
+				$lookup: {
+					from: 'comments',
+					localField: '_id',
+					foreignField: 'postId',
+					as: 'comments',
+				},
+			},
+			{
+				$addFields: {
+					commentsCount: { $size: '$comments' },
+				},
+			},
+			{ $project: { objectIdSender: 0, comments: 0 } },
 		]);
 
 		const post = result[0];
