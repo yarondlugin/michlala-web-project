@@ -13,6 +13,8 @@ import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
 import { ProfileField } from '../ProfileField';
 import { ProfilePicture } from '../ProfilePicture';
+import { FeedPage } from './FeedPage';
+import { PostsFeed } from '../PostsFeed';
 
 const GENERIC_ERROR_MESSAGE = 'Error updating profile picture';
 const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {
@@ -184,6 +186,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                 </Box>
             )}
             {showProfilePictureModal}
+			<PostsFeed title='My Thoughts' filterSender={userId} />
         </PageBox>
     );
 };
