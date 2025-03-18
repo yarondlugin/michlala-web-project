@@ -32,3 +32,8 @@ export const unlikePost = async (postId: string) => {
     const response = await axiosClient.put(`/posts/unlike/${postId}`);
     return response.data;
 };
+
+export const deletePostById = async (postId: string) => {
+    const response = await axiosClient.delete<string>(`/posts/${postId}`);
+    return response.data;
+};

@@ -1,3 +1,4 @@
+import DeleteIcon from '@mui/icons-material/Delete';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CheckIcon from '@mui/icons-material/Check';
@@ -5,7 +6,7 @@ import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import EditIcon from '@mui/icons-material/Edit';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Box, Card, IconButton, Stack, SxProps, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Card, IconButton, Modal, Stack, SxProps, TextField, Tooltip, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ConfettiEffect from 'react-confetti';
@@ -36,6 +37,7 @@ export const PostCard = ({
     const [editedTitle, setEditedTitle] = useState<string>(title);
     const [editedContent, setEditedContent] = useState<string | undefined>(content);
     const [editError, setEditError] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
     const cookieDetails = useRestrictedPage();
     const { like, unlike } = useLikePost(postId);
@@ -195,17 +197,22 @@ export const PostCard = ({
                     {isEditable &&
                         (isEditMode ? (
                             <Stack direction='row' sx={{ justifyContent: 'space-around', marginLeft: 'auto' }}>
-                                <IconButton onClick={handleEdit} sx={{ height: 'fit-content' }}>
-                                    <CheckIcon />
-                                </IconButton>
                                 <IconButton onClick={handleExitEditMode} sx={{ height: 'fit-content' }}>
                                     <DoDisturbIcon />
                                 </IconButton>
+                                <IconButton onClick={handleEdit} sx={{ height: 'fit-content' }}>
+                                    <CheckIcon />
+                                </IconButton>
                             </Stack>
                         ) : (
-                            <IconButton onClick={handleEnterEditMode} sx={{ height: 'fit-content', marginLeft: 'auto' }}>
-                                <EditIcon />
-                            </IconButton>
+                            <Stack direction='row' sx={{ justifyContent: 'space-around', marginLeft: 'auto' }}>
+                                <IconButton onClick={handleEnterEditMode} sx={{ height: 'fit-content' }}>
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton onClick={() => setIsDeleteModalOpen(true)} sx={{ height: 'fit-content' }}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Stack>
                         ))}
                     {}
                 </Box>
@@ -236,7 +243,7 @@ export const PostCard = ({
                             icon={<ChatBubbleOutlineIcon />}
                             onClick={onReply}
                             sx={{ minWidth: 'fit-content' }}
-							/>
+                        />
                         <ActionButton
                             text={likedUsers?.length.toString() || '0'}
                             hoverColor='error.main'
@@ -246,6 +253,48 @@ export const PostCard = ({
                         />
                     </Stack>
                 )}
+
+                {/* Deletion modal */}
+                <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} disableScrollLock>
+                    <Card
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 'min(500px, 50vw)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            padding: 2,
+                            borderRadius: 3,
+                            boxShadow: 1,
+                        }}
+                    >
+                        <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: 2 }}>
+                            Delete this thought?
+                        </Typography>
+                        <Typography variant='body1' sx={{ marginBottom: 2 }}>
+                            This cannot be undone, comments will be deleted as well.
+                        </Typography>
+                        <Typography variant='body1' sx={{ fontStyle: 'italic', marginBottom: 2 }}>
+                            "{title}"
+                        </Typography>
+                        <Stack direction='row' sx={{ justifyContent: 'space-around' }}>
+                            <ActionButton
+                                text='Yes, delete'
+                                icon={<CheckIcon />}
+                                hoverColor='error.main'
+                                onClick={() => {}}
+                            />
+                            <ActionButton
+                                text='No, cancel'
+                                hoverColor='text.primary'
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                icon={<DoDisturbIcon />}
+                            />
+                        </Stack>
+                    </Card>
+                </Modal>
             </Card>
         </>
     );
