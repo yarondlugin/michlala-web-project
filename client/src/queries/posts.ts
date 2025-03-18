@@ -18,6 +18,11 @@ export const createNewPost = async (post: NewPost) => {
     return response.data;
 };
 
+export const editPostById = async (post: Post) => {
+    const response = await axiosClient.put<Post>(`/posts/${post._id}`, post);
+    return response.data;
+};
+
 export const likePost = async (postId: string) => {
     const response = await axiosClient.put(`/posts/like/${postId}`);
     return response.data;

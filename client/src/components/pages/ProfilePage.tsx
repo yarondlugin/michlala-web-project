@@ -11,10 +11,9 @@ import { updateUserById, updateUserProfilePictureById } from '../../queries/user
 import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
+import { PostsFeed } from '../PostsFeed';
 import { ProfileField } from '../ProfileField';
 import { ProfilePicture } from '../ProfilePicture';
-import { FeedPage } from './FeedPage';
-import { PostsFeed } from '../PostsFeed';
 
 const GENERIC_ERROR_MESSAGE = 'Error updating profile picture';
 const EDITABLE_USER_DETAILS: Partial<Record<keyof EditUser, { title: string; widthPercentage: number; disabled?: boolean }>> = {

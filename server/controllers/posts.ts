@@ -140,6 +140,7 @@ export const getPostById = async (request: Request<{ id: string }>, response: Re
 
 export const updatePostById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
 	try {
+		const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
 		const { id: postId } = request.params;
 
 		if (!isValidObjectId(postId)) {
@@ -148,6 +149,12 @@ export const updatePostById = async (request: Request<{ id: string }>, response:
 		}
 
 		const { sender, ...updatedPost } = request.body;
+
+		if (sender !== userId) {
+			response.status(httpStatus.UNAUTHORIZED).send('Unauthorized update');
+			return;
+		}
+
 		const updateResponse = await postModel.updateOne({ _id: postId }, updatedPost);
 		if (updateResponse.matchedCount === 0) {
 			response.status(httpStatus.NOT_FOUND).send(`Post with id ${postId} not found`);
