@@ -1,19 +1,20 @@
-import DeleteIcon from '@mui/icons-material/Delete';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import EditIcon from '@mui/icons-material/Edit';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { Box, Card, IconButton, Modal, Stack, SxProps, TextField, Tooltip, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ConfettiEffect from 'react-confetti';
 import { AI_PROFILE_PICTURE, CONFETTI_DURATION } from '../consts';
 import { useLikePost } from '../hooks/useLikePost';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
-import { editPostById } from '../queries/posts';
+import { deletePostById, editPostById } from '../queries/posts';
 import { Post, PostBatchResponse } from '../types/post';
 import { ActionButton } from './ActionButton';
 import { ProfilePicture } from './ProfilePicture';
@@ -38,6 +39,9 @@ export const PostCard = ({
     const [editedContent, setEditedContent] = useState<string | undefined>(content);
     const [editError, setEditError] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const cookieDetails = useRestrictedPage();
     const { like, unlike } = useLikePost(postId);
@@ -123,6 +127,39 @@ export const PostCard = ({
             senderDetails,
         });
     };
+
+    const { mutate: deletePost } = useMutation({
+        mutationKey: ['deletePost', postId],
+        mutationFn: (postId: string) => deletePostById(postId),
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ['posts'] });
+            await queryClient.cancelQueries({ queryKey: ['post', postId] });
+
+            queryClient.setQueryData(['posts'], (oldData: InfiniteData<PostBatchResponse, unknown>) => {
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page) => {
+                        return {
+                            ...page,
+                            posts: page.posts.filter((post) => post._id !== postId),
+                        };
+                    }),
+                };
+            });
+        },
+        onError: (error) => {
+            console.error(error);
+            setIsDeleteModalOpen(false);
+        },
+        onSettled: () => {
+            setIsDeleteModalOpen(false);
+            queryClient.refetchQueries({ queryKey: ['posts'] });
+            queryClient.refetchQueries({ queryKey: ['post', postId] });
+            if (location.pathname.startsWith('/comments')) {
+                navigate({ to: '/feed' });
+            }
+        },
+    });
 
     return (
         <>
@@ -284,7 +321,7 @@ export const PostCard = ({
                                 text='Yes, delete'
                                 icon={<CheckIcon />}
                                 hoverColor='error.main'
-                                onClick={() => {}}
+                                onClick={() => deletePost(postId)}
                             />
                             <ActionButton
                                 text='No, cancel'
