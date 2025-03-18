@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPost, getAllPosts, getPostById, likePostById, unlikePostById, updatePostById } from '../controllers/posts';
+import { createPost, deletePostById, getAllPosts, getPostById, likePostById, unlikePostById, updatePostById } from '../controllers/posts';
 import { createErrorHandler } from '../utils/createErrorHandler';
 
 export const postsRouter = express.Router();
@@ -10,6 +10,7 @@ postsRouter.get('/:id', getPostById);
 postsRouter.put('/:id', updatePostById);
 postsRouter.put('/like/:id', likePostById);
 postsRouter.put('/unlike/:id', unlikePostById);
+postsRouter.delete('/:id', deletePostById);
 postsRouter.use(createErrorHandler('posts'));
 
 /**
