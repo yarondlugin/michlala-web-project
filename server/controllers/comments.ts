@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { FilterQuery, isValidObjectId, Types } from 'mongoose';
-import { commentModel } from '../models/comments';
+import { Comment, commentModel } from '../models/comments';
 import { postModel } from '../models/posts';
-import { AddUserIdToRequest } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
+import { AddUserIdToRequest } from '../utils/types';
 
 const validatePostId = async (postId: string): Promise<{ isValid: boolean; message: string }> => {
 	if (!postId || !isValidObjectId(postId)) {
@@ -28,20 +28,28 @@ const validatePostId = async (postId: string): Promise<{ isValid: boolean; messa
 	};
 };
 
-export const createComment = async (request: Request, response: Response, next: NextFunction) => {
+export const createComment = async (request: Request<{}, {}, Comment>, response: Response, next: NextFunction) => {
 	const data = request.body;
 
 	const { postId } = data;
-	
+
+	if (!data || data?.content?.length === 0) {
+		response.status(httpStatus.BAD_REQUEST).send('Content cannot be empty');
+		return;
+	}
+
 	try {
-		const {isValid, message} = await validatePostId(postId);
+		const { isValid, message } = await validatePostId(postId.toString());
 
 		if (!isValid) {
 			response.status(httpStatus.BAD_REQUEST).send(message);
 			return;
 		}
 
-		const newComment = await commentModel.create({ ...data, sender: new Types.ObjectId((request as AddUserIdToRequest<Request>).userId) });
+		const newComment = await commentModel.create({
+			...data,
+			sender: new Types.ObjectId((request as AddUserIdToRequest<Request>).userId),
+		});
 		response.status(httpStatus.CREATED).send(newComment);
 	} catch (error) {
 		next(error);
@@ -62,7 +70,7 @@ export const getAllComments = async (
 	const query: FilterQuery<Comment> = { ...lastIdFilter, postId: new Types.ObjectId(postId) };
 
 	try {
-		const {isValid, message} = await validatePostId(postId);
+		const { isValid, message } = await validatePostId(postId);
 
 		if (!isValid) {
 			response.status(httpStatus.BAD_REQUEST).send(message);

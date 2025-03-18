@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { FilterQuery, isValidObjectId, Types } from 'mongoose';
 import { Post, postModel } from '../models/posts';
-import { AddUserIdToRequest } from '../utils/types';
+import { User } from '../models/users';
 import { appConfig } from '../utils/appConfig';
+import { AddUserIdToRequest } from '../utils/types';
 
 export const createPost = async (request: Request<{}, {}, Post>, response: Response, next: NextFunction) => {
 	const postBody = request.body;
@@ -76,8 +77,30 @@ export const getPostById = async (request: Request<{ id: string }>, response: Re
 		return;
 	}
 
+	const idFilter: FilterQuery<Post> = { _id: new Types.ObjectId(postId) };
+
 	try {
-		const post = await postModel.findById(postId);
+		const result = await postModel.aggregate<Post | { senderDetails?: User }>([
+			{ $match: idFilter },
+			{
+				$addFields: {
+					objectIdSender: { $cond: [{ $eq: ['$isAI', true] }, '', { $toObjectId: '$sender' }] },
+				},
+			},
+			{
+				$lookup: {
+					from: 'users',
+					localField: 'objectIdSender',
+					foreignField: '_id',
+					pipeline: [{ $project: { password: 0, refreshTokens: 0 } }],
+					as: 'senderDetails',
+				},
+			},
+			{ $project: { objectIdSender: 0 } },
+		]);
+
+		const post = result[0];
+
 		if (!post) {
 			response.status(httpStatus.NOT_FOUND).send(`Post with id ${postId} not found`);
 			return;

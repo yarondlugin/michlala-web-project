@@ -21,6 +21,7 @@ const ProfileLazyImport = createFileRoute('/profile')()
 const LoginLazyImport = createFileRoute('/login')()
 const FeedLazyImport = createFileRoute('/feed')()
 const IndexLazyImport = createFileRoute('/')()
+const CommentsPostIdLazyImport = createFileRoute('/comments/$postId')()
 
 // Create/Update Routes
 
@@ -53,6 +54,14 @@ const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const CommentsPostIdLazyRoute = CommentsPostIdLazyImport.update({
+  id: '/comments/$postId',
+  path: '/comments/$postId',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/comments.$postId.lazy').then((d) => d.Route),
+)
 
 // Populate the FileRoutesByPath interface
 
@@ -93,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterLazyImport
       parentRoute: typeof rootRoute
     }
+    '/comments/$postId': {
+      id: '/comments/$postId'
+      path: '/comments/$postId'
+      fullPath: '/comments/$postId'
+      preLoaderRoute: typeof CommentsPostIdLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -104,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginLazyRoute
   '/profile': typeof ProfileLazyRoute
   '/register': typeof RegisterLazyRoute
+  '/comments/$postId': typeof CommentsPostIdLazyRoute
 }
 
 export interface FileRoutesByTo {
@@ -112,6 +129,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginLazyRoute
   '/profile': typeof ProfileLazyRoute
   '/register': typeof RegisterLazyRoute
+  '/comments/$postId': typeof CommentsPostIdLazyRoute
 }
 
 export interface FileRoutesById {
@@ -121,14 +139,28 @@ export interface FileRoutesById {
   '/login': typeof LoginLazyRoute
   '/profile': typeof ProfileLazyRoute
   '/register': typeof RegisterLazyRoute
+  '/comments/$postId': typeof CommentsPostIdLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feed' | '/login' | '/profile' | '/register'
+  fullPaths:
+    | '/'
+    | '/feed'
+    | '/login'
+    | '/profile'
+    | '/register'
+    | '/comments/$postId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feed' | '/login' | '/profile' | '/register'
-  id: '__root__' | '/' | '/feed' | '/login' | '/profile' | '/register'
+  to: '/' | '/feed' | '/login' | '/profile' | '/register' | '/comments/$postId'
+  id:
+    | '__root__'
+    | '/'
+    | '/feed'
+    | '/login'
+    | '/profile'
+    | '/register'
+    | '/comments/$postId'
   fileRoutesById: FileRoutesById
 }
 
@@ -138,6 +170,7 @@ export interface RootRouteChildren {
   LoginLazyRoute: typeof LoginLazyRoute
   ProfileLazyRoute: typeof ProfileLazyRoute
   RegisterLazyRoute: typeof RegisterLazyRoute
+  CommentsPostIdLazyRoute: typeof CommentsPostIdLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -146,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginLazyRoute: LoginLazyRoute,
   ProfileLazyRoute: ProfileLazyRoute,
   RegisterLazyRoute: RegisterLazyRoute,
+  CommentsPostIdLazyRoute: CommentsPostIdLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -162,7 +196,8 @@ export const routeTree = rootRoute
         "/feed",
         "/login",
         "/profile",
-        "/register"
+        "/register",
+        "/comments/$postId"
       ]
     },
     "/": {
@@ -179,6 +214,9 @@ export const routeTree = rootRoute
     },
     "/register": {
       "filePath": "register.lazy.tsx"
+    },
+    "/comments/$postId": {
+      "filePath": "comments.$postId.lazy.tsx"
     }
   }
 }

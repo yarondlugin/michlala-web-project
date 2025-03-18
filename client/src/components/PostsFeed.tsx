@@ -1,6 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, CircularProgress, Modal, Stack, Typography } from '@mui/material';
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { fetchPostsBatch } from '../queries/posts';
@@ -10,11 +11,12 @@ import { PageTitle } from './PageTitle';
 import { PostCard } from './PostCard';
 
 type Props = {
-	filterSender?: string
-	title?: string
-}
+    filterSender?: string;
+    title?: string;
+};
 
 export const PostsFeed = ({ filterSender, title = 'Thoughts' }: Props) => {
+    const navigate = useNavigate();
     const [isNewPostOpen, setIsNewPostOpen] = useState(false);
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<
         PostBatchResponse,
@@ -31,7 +33,9 @@ export const PostsFeed = ({ filterSender, title = 'Thoughts' }: Props) => {
     });
 
     const postsComponents = data?.pages.flatMap((page) =>
-        page?.posts.map((post) => <PostCard post={post} key={post._id} sx={{ width: '100%' }} />),
+        page?.posts.map((post) => (
+            <PostCard post={post} key={post._id} sx={{ width: '100%' }} onReply={() => navigate({ to: `/comments/${post._id}` })} />
+        )),
     );
 
     const handleScroll = () => {

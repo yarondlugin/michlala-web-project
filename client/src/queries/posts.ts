@@ -2,7 +2,14 @@ import { NewPost, Post, PostBatchResponse } from '../types/post';
 import { axiosClient } from './axios';
 
 export const fetchPostsBatch = async (limit: number, lastId?: string, sender?: string) => {
-    const response = await axiosClient.get<PostBatchResponse>(`/posts/?limit=${limit}${lastId ? `&lastId=${lastId}` : ''}${sender ? `&sender=${sender}` : ''}`);
+    const response = await axiosClient.get<PostBatchResponse>(
+        `/posts/?limit=${limit}${lastId ? `&lastId=${lastId}` : ''}${sender ? `&sender=${sender}` : ''}`,
+    );
+    return response.data;
+};
+
+export const fetchPostById = async (id: string) => {
+    const response = await axiosClient.get<Post>(`/posts/${id}`);
     return response.data;
 };
 
