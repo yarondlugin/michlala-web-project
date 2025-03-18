@@ -5,11 +5,17 @@ import { Post, postModel } from '../models/posts';
 import { AddUserIdToRequest } from '../utils/types';
 import { appConfig } from '../utils/appConfig';
 
-export const createPost = async (request: Request, response: Response, next: NextFunction) => {
+export const createPost = async (request: Request<{}, {}, Post>, response: Response, next: NextFunction) => {
 	const postBody = request.body;
+	const userId = (request as AddUserIdToRequest<Request>).userId;
+
+	if (!isValidObjectId(userId)) {
+		response.status(httpStatus.BAD_REQUEST).send(`Invalid sender id ${userId}`);
+		return;
+	}
 
 	try {
-		const post = await postModel.create({ ...postBody, sender: (request as AddUserIdToRequest<Request>).userId });
+		const post = await postModel.create({ ...postBody, sender: new Types.ObjectId(userId) });
 		response.status(httpStatus.CREATED).send(post);
 	} catch (error) {
 		next(error);

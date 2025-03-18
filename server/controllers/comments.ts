@@ -1,52 +1,100 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { isValidObjectId } from 'mongoose';
+import { FilterQuery, isValidObjectId, Types } from 'mongoose';
 import { commentModel } from '../models/comments';
 import { postModel } from '../models/posts';
 import { AddUserIdToRequest } from '../utils/types';
+import { appConfig } from '../utils/appConfig';
+
+const validatePostId = async (postId: string): Promise<{ isValid: boolean; message: string }> => {
+	if (!postId || !isValidObjectId(postId)) {
+		return {
+			isValid: false,
+			message: `Invalid post id "${postId || '(empty)'}"`,
+		};
+	}
+
+	const postExists = await postModel.exists({ _id: postId });
+	if (!postExists) {
+		return {
+			isValid: false,
+			message: `Post with id ${postId} doesn't exist`,
+		};
+	}
+
+	return {
+		isValid: true,
+		message: 'valid postId',
+	};
+};
 
 export const createComment = async (request: Request, response: Response, next: NextFunction) => {
 	const data = request.body;
 
 	const { postId } = data;
-
-	if (!postId || !isValidObjectId(postId)) {
-		response.status(httpStatus.BAD_REQUEST).send(`Invalid post id "${postId || '(empty)'}"`);
-		return;
-	}
-	const postExists = await postModel.exists({ _id: postId });
-	if (!postExists) {
-		response.status(httpStatus.BAD_REQUEST).send(`Post with id ${postId} doesn't exist`);
-		return;
-	}
-
+	
 	try {
-		const newComment = await commentModel.create({ ...data, sender: (request as AddUserIdToRequest<Request>).userId });
+		const {isValid, message} = await validatePostId(postId);
+
+		if (!isValid) {
+			response.status(httpStatus.BAD_REQUEST).send(message);
+			return;
+		}
+
+		const newComment = await commentModel.create({ ...data, sender: new Types.ObjectId((request as AddUserIdToRequest<Request>).userId) });
 		response.status(httpStatus.CREATED).send(newComment);
 	} catch (error) {
 		next(error);
 	}
 };
 
-export const getComments = async (
-	request: Request<{}, {}, {}, { sender?: string; postId?: string }>,
+export const getAllComments = async (
+	request: Request<{}, {}, {}, { postId: string; limit?: string; lastId?: string }>,
 	response: Response,
 	next: NextFunction
 ) => {
-	const { postId } = request.query;
+	const { maxCommentsBatch } = appConfig;
 
-	if (!!postId && !isValidObjectId(postId)) {
-		response.status(httpStatus.BAD_REQUEST).send(`Invalid post id "${postId}"`);
-		return;
-	}
+	const { postId, limit: limitParam, lastId } = request.query;
+	const limit = Math.min(Number(limitParam) || maxCommentsBatch, maxCommentsBatch);
 
-	const filters = Object.entries(request.query)
-		.filter(([key]) => Object.keys(commentModel.schema.obj).includes(key))
-		.reduce((previous, [key, value]) => ({ ...previous, [key]: value }), {});
+	const lastIdFilter: FilterQuery<Comment> = !!lastId ? { _id: { $lt: new Types.ObjectId(lastId) } } : {};
+	const query: FilterQuery<Comment> = { ...lastIdFilter, postId: new Types.ObjectId(postId) };
 
 	try {
-		const comments = await commentModel.find(filters);
-		response.status(httpStatus.OK).send(comments);
+		const {isValid, message} = await validatePostId(postId);
+
+		if (!isValid) {
+			response.status(httpStatus.BAD_REQUEST).send(message);
+			return;
+		}
+
+		const comments = await commentModel.aggregate([
+			{ $match: query },
+			{
+				$addFields: {
+					objectIdSender: { $toObjectId: '$sender' },
+				},
+			},
+			{
+				$lookup: {
+					from: 'users',
+					localField: 'objectIdSender',
+					foreignField: '_id',
+					pipeline: [{ $project: { password: 0, refreshTokens: 0 } }],
+					as: 'senderDetails',
+				},
+			},
+			{ $project: { objectIdSender: 0 } },
+			{ $sort: { _id: -1 } },
+			{ $limit: limit ?? 0 },
+		]);
+
+		response.status(httpStatus.OK).send({
+			comments,
+			hasMore: comments.length === limit,
+			lastId: comments.slice(-1)[0]?._id ?? null,
+		});
 	} catch (error) {
 		next(error);
 	}
