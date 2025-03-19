@@ -11,11 +11,10 @@ import { authenticationRouter } from './routes/authentication';
 import { commentsRouter } from './routes/comments';
 import { postsRouter } from './routes/posts';
 import { usersRouter } from './routes/users';
+import { postGenerationCronJob } from './services/ai';
 import { startDB } from './services/db';
 import { swagger } from './swagger';
 import { appConfig } from './utils/appConfig';
-import { postGenerationCronJob } from './services/ai';
-import path from 'path';
 
 dotenv.config();
 const {
@@ -36,7 +35,7 @@ app.use(
 	})
 );
 app.use(cookieParser());
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static('public'));
 
 startDB();
 
