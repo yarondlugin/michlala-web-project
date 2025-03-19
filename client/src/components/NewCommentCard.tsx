@@ -67,9 +67,9 @@ export const NewCommentCard = ({ onComment, post }: Props) => {
         },
         onSettled: () => {
             setCommentContent('');
-            setTimeout(() => {
-                queryClient.refetchQueries({ queryKey: ['comments', post._id] });
-                queryClient.refetchQueries({ queryKey: ['post', post._id] });
+            setTimeout(async () => {
+                await queryClient.refetchQueries({ queryKey: ['comments', post._id] });
+                await queryClient.refetchQueries({ queryKey: ['post', post._id] });
             }, CONFETTI_DURATION);
         },
     });

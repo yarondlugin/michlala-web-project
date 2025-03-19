@@ -68,9 +68,9 @@ export const CommentCard = ({ comment: { _id: commentId, content, isNew, senderD
             console.error(error);
             setEditError('Something went wrong, please try again');
         },
-        onSettled: () => {
+        onSettled: async () => {
             handleExitEditMode();
-            queryClient.refetchQueries({ queryKey: ['comments', postId] });
+            await queryClient.refetchQueries({ queryKey: ['comments', postId] });
         },
     });
 
@@ -95,9 +95,9 @@ export const CommentCard = ({ comment: { _id: commentId, content, isNew, senderD
             console.error(error);
             setIsDeleteModalOpen(false);
         },
-        onSettled: () => {
+        onSettled: async () => {
             setIsDeleteModalOpen(false);
-            queryClient.refetchQueries({ queryKey: ['comments', postId] });
+            await queryClient.refetchQueries({ queryKey: ['comments', postId] });
         },
     });
 

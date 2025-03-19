@@ -79,7 +79,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
             setPostContent('');
             setPostTitle('');
             setPostImage(undefined);
-            setTimeout(() => queryClient.refetchQueries({ queryKey: ['posts'] }), CONFETTI_DURATION);
+            setTimeout(async () => await queryClient.refetchQueries({ queryKey: ['posts'] }), CONFETTI_DURATION);
         },
     });
 

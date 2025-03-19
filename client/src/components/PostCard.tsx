@@ -111,10 +111,10 @@ export const PostCard = ({
             console.error(error);
             setEditError('Something went wrong, please try again');
         },
-        onSettled: () => {
+        onSettled: async () => {
             handleExitEditMode();
-            queryClient.refetchQueries({ queryKey: ['posts'] });
-            queryClient.refetchQueries({ queryKey: ['post', postId] });
+            await queryClient.refetchQueries({ queryKey: ['posts'] });
+            await queryClient.refetchQueries({ queryKey: ['post', postId] });
         },
     });
 
@@ -174,10 +174,10 @@ export const PostCard = ({
             console.error(error);
             setIsDeleteModalOpen(false);
         },
-        onSettled: () => {
+        onSettled: async () => {
             setIsDeleteModalOpen(false);
-            queryClient.refetchQueries({ queryKey: ['posts'] });
-            queryClient.refetchQueries({ queryKey: ['post', postId] });
+            await queryClient.refetchQueries({ queryKey: ['posts'] });
+            await queryClient.refetchQueries({ queryKey: ['post', postId] });
             if (location.pathname.startsWith('/comments')) {
                 navigate({ to: '/feed' });
             }

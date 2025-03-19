@@ -70,8 +70,8 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                 queryClient.setQueryData(['users', userId], context.previousUser);
             }
         },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ['users', userId] });
+        onSettled: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['users', userId] });
         },
     });
 
