@@ -75,7 +75,7 @@ export const useNavbar = () => () => {
     }, [logout]);
 
     return (
-        <AppBar position='sticky' sx={{ width: '100%', top: 0, marginBottom: '2%' }}>
+        <AppBar position='sticky' sx={{ width: '100%', top: 0, }}>
             <Container>
                 <Toolbar disableGutters>
                     <Box sx={{ flexGrow: 1, ...XS_DISPLAY }}>
