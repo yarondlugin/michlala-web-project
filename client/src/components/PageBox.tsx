@@ -9,7 +9,15 @@ export const PageBox = ({ children, sx }: Props) => {
     return (
         <Box
             id='page-box'
-            sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%', placeItems: 'center', ...sx }}
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '90vh',
+                width: '100%',
+                paddingY: '1%',
+                placeItems: 'center',
+                ...sx,
+            }}
         >
             {children}
         </Box>

@@ -9,6 +9,7 @@ export type Post = {
     senderDetails?: User[];
     isAI?: boolean;
     likedUsers?: string[];
+    commentsCount?: number;
 };
 
 export type PostBatchResponse = {

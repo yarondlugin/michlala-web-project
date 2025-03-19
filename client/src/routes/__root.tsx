@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { CookiesProvider } from 'react-cookie';
+import { ErrorCard } from '../components/ErrorCard';
+import { PageBox } from '../components/PageBox';
 
 const darkTheme = createTheme({
     palette: {
@@ -31,6 +33,10 @@ export const Route = createRootRoute({
         </Box>
     ),
     notFoundComponent: () => {
-        return <p>This page doesn't exist!</p>;
+        return (
+            <PageBox sx={{ justifyContent: 'center', alignContent: 'center' }}>
+                <ErrorCard title='Page Not Found' message="We couldn't find the page you're looking for" showBackToFeedButton />
+            </PageBox>
+        );
     },
 });
