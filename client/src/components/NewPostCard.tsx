@@ -1,13 +1,14 @@
 import { Box, Card, Stack, TextField, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { CONFETTI_DURATION } from '../consts';
 import { useMyDetails } from '../hooks/useMyDetails';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
-import { createNewPost } from '../queries/posts';
+import { createNewPost, updatePostImageById } from '../queries/posts';
 import { NewPost, PostBatchResponse } from '../types/post';
 import { ActionButton } from './ActionButton';
+import PostImage from './PostImage';
 import { ProfilePicture } from './ProfilePicture';
-import { CONFETTI_DURATION } from '../consts';
 
 type NewPostCardProps = {
     onPost?: () => void;
@@ -20,6 +21,14 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
     const [newPostError, setNewPostError] = useState<string | null>(null);
     const [postTitle, setPostTitle] = useState<string>('');
     const [postContent, setPostContent] = useState<string>('');
+    const [postImage, setPostImage] = useState<File | null | undefined>();
+
+    const postImageSrc = useMemo(() => {
+        if (postImage) {
+            return URL.createObjectURL(postImage);
+        }
+    }, [postImage]);
+
     const queryClient = useQueryClient();
     const { mutate: createPost } = useMutation({
         mutationKey: ['newPost'],
@@ -50,6 +59,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                                         },
                                     ],
                                     isNew: true,
+                                    imageURI: postImageSrc,
                                 },
                                 ...page.posts,
                             ],
@@ -62,9 +72,13 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
             console.error(error);
             setNewPostError('Something went wrong, please try again');
         },
-        onSettled: () => {
+        onSettled: async (data) => {
+            if (postImage && data?._id) {
+                await updatePostImageById(data._id, postImage);
+            }
             setPostContent('');
             setPostTitle('');
+            setPostImage(undefined);
             setTimeout(() => queryClient.refetchQueries({ queryKey: ['posts'] }), CONFETTI_DURATION);
         },
     });
@@ -98,11 +112,11 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                 <ProfilePicture
                     profilePictureURL={
                         myDetails?.userResult?.profilePictureURL &&
-                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}`
+                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}?ts=${Date.now()}`
                     }
                     sx={{ marginRight: '2%' }}
                 />
-                <Box display={'flex'} flexDirection={'column'} width={'100%'}>
+                <Stack width={'100%'}>
                     <TextField
                         sx={{ width: '100%' }}
                         placeholder='What shower thought did you have today?'
@@ -116,18 +130,21 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                     <Typography variant='body2' color='error'>
                         {newPostError ?? '‎' /*Invisible character so the error message is always rendered*/}
                     </Typography>
-                    <TextField
-                        multiline={true}
-                        minRows={3}
-                        sx={{ width: '100%', marginTop: 2 }}
-                        placeholder='Care to elaborate? (optional)'
-                        value={postContent}
-                        onChange={(e) => {
-                            setPostContent(e.target.value);
-                            setNewPostError(null);
-                        }}
-                    />
-                </Box>
+                    <Stack direction='row' spacing={2} sx={{ justifyContent: 'space-between' }}>
+                        <TextField
+                            multiline={true}
+                            minRows={3}
+                            sx={{ width: '100%', marginTop: 2, flexGrow: 1 }}
+                            placeholder='Care to elaborate? (optional)'
+                            value={postContent}
+                            onChange={(e) => {
+                                setPostContent(e.target.value);
+                                setNewPostError(null);
+                            }}
+                        />
+                        <PostImage imageURI={postImageSrc} size={200} isEditing={true} onUpload={(file) => setPostImage(file)} />
+                    </Stack>
+                </Stack>
             </Box>
 
             <Stack direction='row' sx={{ justifyContent: 'flex-end', marginTop: 2 }}>

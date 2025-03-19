@@ -154,7 +154,7 @@ export const CommentCard = ({ comment: { _id: commentId, content, isNew, senderD
                     <ProfilePicture
                         profilePictureURL={
                             senderDetails?.[0]?.profilePictureURL &&
-                            `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}`
+                            `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}?ts=${Date.now()}`
                         }
                     />
                 </Box>

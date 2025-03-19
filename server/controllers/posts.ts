@@ -1,10 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { FilterQuery, isValidObjectId, Types } from 'mongoose';
+import multer from 'multer';
+import path from 'path';
 import { commentModel } from '../models/comments';
 import { Post, postModel } from '../models/posts';
 import { User } from '../models/users';
 import { appConfig } from '../utils/appConfig';
+import { NOT_AN_IMAGE_ERROR } from '../utils/createErrorHandler';
 import { AddUserIdToRequest } from '../utils/types';
 
 const validatePostUpdate = async (
@@ -178,13 +181,13 @@ export const getPostById = async (request: Request<{ id: string }>, response: Re
 };
 
 export const updatePostById = async (
-	request: Request<{ id: string }, {}, Pick<Post, 'title' | 'content'>>,
+	request: Request<{ id: string }, {}, Pick<Post, 'title' | 'content' | 'imageURI'>>,
 	response: Response,
 	next: NextFunction
 ) => {
 	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
 	const { id: postId } = request.params;
-	const { title, content } = request.body;
+	const { title, content, imageURI } = request.body;
 
 	try {
 		const { isValid, message, status } = await validatePostUpdate(userId, postId);
@@ -194,7 +197,7 @@ export const updatePostById = async (
 			return;
 		}
 
-		await postModel.updateOne({ _id: postId }, { title, content });
+		await postModel.updateOne({ _id: postId }, { title, content, imageURI });
 
 		response.status(httpStatus.OK).send('Updated successfully');
 	} catch (error) {
@@ -257,6 +260,55 @@ export const deletePostById = async (request: Request<{ id: string }>, response:
 		await commentModel.deleteMany({ postId });
 		await postModel.findByIdAndDelete({ _id: postId });
 		response.status(httpStatus.OK).send(`Post ${postId} deleted`);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const uploadPostImage = multer({
+	storage: multer.diskStorage({
+		destination: 'public/postsImages/',
+		filename: (request, file, callback) => {
+			const { id: postId } = request.params;
+			const ext = path.extname(file.originalname);
+			callback(null, `${postId}${ext}`);
+		},
+	}),
+	fileFilter: (_request, file, callback) => {
+		if (!path.extname(file.originalname).match(/^\.(jpg|jpeg|png)$/)) {
+			return callback(new Error(NOT_AN_IMAGE_ERROR));
+		}
+		callback(null, true);
+	},
+});
+
+export const updatePostImageById = async (
+	request: Request<{ id: string }, Express.Multer.File>,
+	response: Response,
+	next: NextFunction
+) => {
+	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
+	const { id: postId } = request.params;
+	const postImage = request.file;
+
+	if (!postImage) {
+		response.status(httpStatus.BAD_REQUEST).send('No image provided');
+		return;
+	}
+
+	try {
+		const { isValid, message, status } = await validatePostUpdate(userId, postId);
+
+		if (!isValid) {
+			response.status(status).send(message);
+			return;
+		}
+
+		await postModel.findByIdAndUpdate(postId, {
+			imageURI: `${postImage.destination}${postImage.filename}`,
+		});
+
+		response.status(httpStatus.OK).send(`Post ${postId} updated`);
 	} catch (error) {
 		next(error);
 	}

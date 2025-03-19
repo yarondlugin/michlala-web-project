@@ -14,10 +14,11 @@ import ConfettiEffect from 'react-confetti';
 import { AI_PROFILE_PICTURE, CONFETTI_DURATION } from '../consts';
 import { useLikePost } from '../hooks/useLikePost';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
-import { deletePostById, editPostById } from '../queries/posts';
+import { deletePostById, editPostById, updatePostImageById } from '../queries/posts';
 import { Post, PostBatchResponse } from '../types/post';
 import { ActionButton } from './ActionButton';
 import { DeletionModal } from './DeletionModal';
+import PostImage from './PostImage';
 import { ProfilePicture } from './ProfilePicture';
 
 type Props = {
@@ -27,7 +28,7 @@ type Props = {
 };
 
 export const PostCard = ({
-    post: { _id: postId, title, content, sender, isNew, senderDetails, isAI, likedUsers, commentsCount },
+    post: { _id: postId, title, content, sender, isNew, senderDetails, isAI, likedUsers, commentsCount, imageURI },
     sx,
     onReply,
 }: Props) => {
@@ -38,6 +39,7 @@ export const PostCard = ({
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [editedTitle, setEditedTitle] = useState<string>(title);
     const [editedContent, setEditedContent] = useState<string | undefined>(content);
+    const [editedImage, setEditedImage] = useState<File | undefined | null>();
     const [editError, setEditError] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
@@ -49,6 +51,24 @@ export const PostCard = ({
 
     const isLiked = useMemo(() => !!cookieDetails && !!likedUsers?.includes(cookieDetails.userId), [likedUsers, cookieDetails]);
     const isEditable = useMemo(() => !!cookieDetails && cookieDetails.userId === sender, [sender, cookieDetails]);
+
+    const postImageSrc = useMemo(() => {
+        if (editedImage) {
+            return URL.createObjectURL(editedImage);
+        }
+
+        if (editedImage === null) {
+            return null;
+        }
+
+        if (isNew) {
+            return imageURI;
+        }
+
+        if (imageURI) {
+            return `${import.meta.env.VITE_SERVER_URL}/${imageURI}?ts=${Date.now()}`;
+        }
+    }, [editedImage, isEditMode, imageURI]);
 
     useEffect(() => {
         if (componentRef.current) {
@@ -66,10 +86,14 @@ export const PostCard = ({
     const queryClient = useQueryClient();
     const { mutate: editPost } = useMutation({
         mutationKey: ['editPost', postId],
-        mutationFn: (post: Pick<Post, '_id' | 'title' | 'content'>) => editPostById(post),
+        mutationFn: (post: Pick<Post, '_id' | 'title' | 'content' | 'imageURI'>) => editPostById(post),
         onMutate: async (editedPost) => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
             await queryClient.cancelQueries({ queryKey: ['post', postId] });
+
+            if (editedImage) {
+                await updatePostImageById(postId, editedImage);
+            }
 
             queryClient.setQueryData(['posts'], (oldData: InfiniteData<PostBatchResponse, unknown>) => {
                 return {
@@ -77,7 +101,7 @@ export const PostCard = ({
                     pages: oldData.pages.map((page) => {
                         return {
                             ...page,
-                            posts: page.posts.map((post) => (post._id === editedPost._id ? editedPost : post)),
+                            posts: page.posts.map((currentPost) => (currentPost._id === editedPost._id ? editedPost : currentPost)),
                         };
                     }),
                 };
@@ -97,6 +121,7 @@ export const PostCard = ({
     const resetEditedValues = () => {
         setEditedTitle(title);
         setEditedContent(content);
+        setEditedImage(undefined);
     };
 
     const handleEnterEditMode = () => {
@@ -116,10 +141,13 @@ export const PostCard = ({
         }
         setEditError(null);
 
+        const deleteImage = imageURI && editedImage === null ? { imageURI: null } : {};
+
         editPost({
             _id: postId,
             title: editedTitle,
             content: editedContent,
+            ...deleteImage,
         });
     };
 
@@ -192,7 +220,7 @@ export const PostCard = ({
                             isAI
                                 ? AI_PROFILE_PICTURE
                                 : senderDetails?.[0]?.profilePictureURL &&
-                                  `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}`
+                                  `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}?ts=${Date.now()}`
                         }
                         sx={{ marginRight: '2%' }}
                     />
@@ -221,11 +249,13 @@ export const PostCard = ({
                             </Typography>
                         )}
                     </Stack>
+
                     {isAI && (
                         <Tooltip title='AI Generated Post' placement='top'>
                             <AutoAwesomeIcon sx={{ marginLeft: 'auto' }} />
                         </Tooltip>
                     )}
+
                     {isEditable &&
                         !isNew &&
                         (isEditMode ? (
@@ -250,22 +280,25 @@ export const PostCard = ({
                 </Box>
 
                 {/* Content section */}
-                <Box sx={{ paddingLeft: 7, paddingY: 1 }}>
+                <Stack direction='row' spacing={2} sx={{ paddingLeft: 7, paddingY: 1, justifyContent: 'space-between' }}>
                     {!isEditMode ? (
-                        <Typography variant='body1' sx={{ whiteSpace: 'pre-wrap' }}>
+                        <Typography variant='body1' sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', flexGrow: 1 }}>
                             {content}
                         </Typography>
                     ) : (
                         <TextField
                             multiline={true}
                             minRows={3}
-                            sx={{ width: '100%', marginTop: 2 }}
+                            sx={{ marginTop: 2, flexGrow: 1 }}
                             placeholder='Care to elaborate? (optional)'
                             value={editedContent}
                             onChange={(event) => setEditedContent(event.target.value)}
                         />
                     )}
-                </Box>
+                    {(imageURI || isEditMode) && (
+                        <PostImage imageURI={postImageSrc} size={200} isEditing={isEditMode} onUpload={(file) => setEditedImage(file)} />
+                    )}
+                </Stack>
 
                 {/* Action buttons section */}
                 {!isEditMode && (

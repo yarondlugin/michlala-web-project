@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { Box, CircularProgress, IconButton, Stack, Typography } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
@@ -144,7 +144,8 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                             profilePictureURL={
                                 isEditing && editUser?.newProfilePicture
                                     ? URL.createObjectURL(editUser.newProfilePicture)
-                                    : editUser?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${editUser?.profilePictureURL}`
+                                    : editUser?.profilePictureURL &&
+                                      `${import.meta.env.VITE_SERVER_URL}/${editUser?.profilePictureURL}?ts=${Date.now()}`
                             }
                             sx={{ width: 200, height: 200, marginBottom: '10%' }}
                         />
@@ -165,7 +166,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                         {errorMessage ?? '‎' /*Invisible character so the error message is always rendered*/}
                     </Typography>
                     {isEditable && (
-                        <Box marginX={'auto'} marginTop={'10%'} marginBottom={'3%'}>
+                        <Stack direction='row' spacing={4} marginX={'auto'} marginBottom={'3%'}>
                             {isEditing ? (
                                 <>
                                     <IconButton onClick={handleCancelEditMode}>
@@ -180,12 +181,12 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                                     <ModeEditIcon />
                                 </IconButton>
                             )}
-                        </Box>
+                        </Stack>
                     )}
                 </Box>
             )}
             {showProfilePictureModal}
-			<PostsFeed title='My Thoughts' filterSender={userId} />
+            <PostsFeed title='My Thoughts' filterSender={userId} />
         </PageBox>
     );
 };

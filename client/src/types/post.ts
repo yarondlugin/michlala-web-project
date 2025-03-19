@@ -10,6 +10,7 @@ export type Post = {
     isAI?: boolean;
     likedUsers?: string[];
     commentsCount?: number;
+	imageURI?: string | null;
 };
 
 export type PostBatchResponse = {
