@@ -11,7 +11,7 @@ const upload = multer({
 		filename: (request, file, callback) => {
 			const { id: userId } = request.params;
 			const ext = path.extname(file.originalname);
-			callback(null, `${userId}${Date.now()}${ext}`);
+			callback(null, `${userId}${ext}`);
 		},
 	}),
 	fileFilter: (_request, file, callback) => {

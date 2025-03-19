@@ -10,7 +10,7 @@ export const useShowProfilePicture = (user?: User) => {
         showProfilePictureModal: user ? (
             <Modal open={isShowingProfilePicture} onClose={() => setIsShowingProfilePicture(false)} disableScrollLock>
                 <img
-                    src={`${import.meta.env.VITE_SERVER_URL}/${user.profilePictureURL}`}
+                    src={`${import.meta.env.VITE_SERVER_URL}/${user.profilePictureURL}?ts=${Date.now()}`}
                     style={{
                         width: 'min(70vh, 70vw)',
                         height: 'min(70vh, 70vw)',

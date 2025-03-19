@@ -1,12 +1,13 @@
 import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
-import { Box, CardMedia, Modal, SxProps, Theme, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, CardMedia, IconButton, Modal, SxProps, Theme, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 
 type Props = {
-    imageURI?: string;
+    imageURI?: string | null;
     size: number;
     isEditing?: boolean;
-    onUpload?: (file?: File) => void | Promise<void>;
+    onUpload?: (file?: File | null) => void | Promise<void>;
     sx?: SxProps<Theme>;
 };
 
@@ -59,13 +60,38 @@ const PostImage = ({ imageURI, size = 200, isEditing = false, onUpload = () => {
                     }}
                 />
                 {imageURI ? (
-                    <CardMedia
-                        component='img'
-                        image={imageURI}
-                        alt='Post image'
-                        title={isEditing ? 'Click to edit image' : 'Click to view image'}
-                        sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
-                    />
+                    <Box
+                        sx={{
+                            backgroundImage: `url(${imageURI})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            cursor: 'pointer',
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            placeItems: 'center',
+                            placeContent: 'center',
+                        }}
+                    >
+                        {isEditing && (
+                            <IconButton
+                                sx={{
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                        color: 'text.primary',
+                                    },
+                                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                }}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    onUpload(null);
+                                }}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        )}
+                    </Box>
                 ) : (
                     <>
                         <AddPhotoAlternateOutlinedIcon sx={{ fontSize: 64, color: 'grey', mb: 1 }} />
@@ -78,7 +104,7 @@ const PostImage = ({ imageURI, size = 200, isEditing = false, onUpload = () => {
             <Modal open={isViewing} onClose={handleModalClick}>
                 <CardMedia
                     component='img'
-                    image={imageURI}
+                    image={imageURI ?? undefined}
                     sx={{
                         objectFit: 'scale-down',
                         width: 'fit-content',

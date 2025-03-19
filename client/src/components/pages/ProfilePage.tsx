@@ -144,7 +144,8 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                             profilePictureURL={
                                 isEditing && editUser?.newProfilePicture
                                     ? URL.createObjectURL(editUser.newProfilePicture)
-                                    : editUser?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${editUser?.profilePictureURL}`
+                                    : editUser?.profilePictureURL &&
+                                      `${import.meta.env.VITE_SERVER_URL}/${editUser?.profilePictureURL}?ts=${Date.now()}`
                             }
                             sx={{ width: 200, height: 200, marginBottom: '10%' }}
                         />
@@ -185,7 +186,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                 </Box>
             )}
             {showProfilePictureModal}
-			<PostsFeed title='My Thoughts' filterSender={userId} />
+            <PostsFeed title='My Thoughts' filterSender={userId} />
         </PageBox>
     );
 };

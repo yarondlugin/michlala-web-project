@@ -22,6 +22,7 @@ const postSchemaDefinition = {
 	imageURI: {
 		type: String,
 		allowFilter: false,
+		default: null,
 	},
 } as const;
 

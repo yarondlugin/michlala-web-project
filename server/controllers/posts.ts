@@ -1,14 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { FilterQuery, isValidObjectId, Types } from 'mongoose';
+import multer from 'multer';
+import path from 'path';
 import { commentModel } from '../models/comments';
 import { Post, postModel } from '../models/posts';
 import { User } from '../models/users';
 import { appConfig } from '../utils/appConfig';
-import { AddUserIdToRequest } from '../utils/types';
-import multer from 'multer';
-import path from 'path';
 import { NOT_AN_IMAGE_ERROR } from '../utils/createErrorHandler';
+import { AddUserIdToRequest } from '../utils/types';
 
 const validatePostUpdate = async (
 	userId: string,
@@ -181,13 +181,13 @@ export const getPostById = async (request: Request<{ id: string }>, response: Re
 };
 
 export const updatePostById = async (
-	request: Request<{ id: string }, {}, Pick<Post, 'title' | 'content'>>,
+	request: Request<{ id: string }, {}, Pick<Post, 'title' | 'content' | 'imageURI'>>,
 	response: Response,
 	next: NextFunction
 ) => {
 	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
 	const { id: postId } = request.params;
-	const { title, content } = request.body;
+	const { title, content, imageURI } = request.body;
 
 	try {
 		const { isValid, message, status } = await validatePostUpdate(userId, postId);
@@ -197,7 +197,7 @@ export const updatePostById = async (
 			return;
 		}
 
-		await postModel.updateOne({ _id: postId }, { title, content });
+		await postModel.updateOne({ _id: postId }, { title, content, imageURI });
 
 		response.status(httpStatus.OK).send('Updated successfully');
 	} catch (error) {
@@ -271,7 +271,7 @@ export const uploadPostImage = multer({
 		filename: (request, file, callback) => {
 			const { id: postId } = request.params;
 			const ext = path.extname(file.originalname);
-			callback(null, `${postId}${Date.now()}${ext}`);
+			callback(null, `${postId}${ext}`);
 		},
 	}),
 	fileFilter: (_request, file, callback) => {

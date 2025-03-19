@@ -75,7 +75,7 @@ export const useNavbar = () => () => {
     }, [logout]);
 
     return (
-        <AppBar position='sticky' sx={{ width: '100%', top: 0, }}>
+        <AppBar position='sticky' sx={{ width: '100%', top: 0 }}>
             <Container>
                 <Toolbar disableGutters>
                     <Box sx={{ flexGrow: 1, ...XS_DISPLAY }}>
@@ -135,7 +135,8 @@ export const useNavbar = () => () => {
                             <IconButton onClick={handleOpenUserMenu} sx={{ padding: 0 }}>
                                 <ProfilePicture
                                     profilePictureURL={
-                                        myDetails?.profilePictureURL && `${import.meta.env.VITE_SERVER_URL}/${myDetails.profilePictureURL}`
+                                        myDetails?.profilePictureURL &&
+                                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.profilePictureURL}?ts=${Date.now()}`
                                     }
                                     sx={{ marginRight: '2%' }}
                                 />

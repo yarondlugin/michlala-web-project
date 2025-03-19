@@ -39,7 +39,7 @@ export const PostCard = ({
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [editedTitle, setEditedTitle] = useState<string>(title);
     const [editedContent, setEditedContent] = useState<string | undefined>(content);
-    const [editedImage, setEditedImage] = useState<File | undefined>();
+    const [editedImage, setEditedImage] = useState<File | undefined | null>();
     const [editError, setEditError] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
@@ -53,16 +53,20 @@ export const PostCard = ({
     const isEditable = useMemo(() => !!cookieDetails && cookieDetails.userId === sender, [sender, cookieDetails]);
 
     const postImageSrc = useMemo(() => {
-		if (editedImage) {
-			return URL.createObjectURL(editedImage);
-		}
+        if (editedImage) {
+            return URL.createObjectURL(editedImage);
+        }
 
-		if (isNew) {
-			return imageURI;
-		}
+        if (editedImage === null) {
+            return null;
+        }
+
+        if (isNew) {
+            return imageURI;
+        }
 
         if (imageURI) {
-            return `${import.meta.env.VITE_SERVER_URL}/${imageURI}`;
+            return `${import.meta.env.VITE_SERVER_URL}/${imageURI}?ts=${Date.now()}`;
         }
     }, [editedImage, isEditMode, imageURI]);
 
@@ -82,12 +86,12 @@ export const PostCard = ({
     const queryClient = useQueryClient();
     const { mutate: editPost } = useMutation({
         mutationKey: ['editPost', postId],
-        mutationFn: (post: Pick<Post, '_id' | 'title' | 'content'>) => editPostById(post),
+        mutationFn: (post: Pick<Post, '_id' | 'title' | 'content' | 'imageURI'>) => editPostById(post),
         onMutate: async (editedPost) => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
             await queryClient.cancelQueries({ queryKey: ['post', postId] });
 
-			if (editedImage) {
+            if (editedImage) {
                 await updatePostImageById(postId, editedImage);
             }
 
@@ -137,10 +141,13 @@ export const PostCard = ({
         }
         setEditError(null);
 
+        const deleteImage = imageURI && editedImage === null ? { imageURI: null } : {};
+
         editPost({
             _id: postId,
             title: editedTitle,
             content: editedContent,
+            ...deleteImage,
         });
     };
 
@@ -213,7 +220,7 @@ export const PostCard = ({
                             isAI
                                 ? AI_PROFILE_PICTURE
                                 : senderDetails?.[0]?.profilePictureURL &&
-                                  `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}`
+                                  `${import.meta.env.VITE_SERVER_URL}/${senderDetails[0].profilePictureURL}?ts=${Date.now()}`
                         }
                         sx={{ marginRight: '2%' }}
                     />

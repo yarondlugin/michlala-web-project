@@ -1,14 +1,14 @@
 import { Box, Card, Stack, TextField, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { CONFETTI_DURATION } from '../consts';
 import { useMyDetails } from '../hooks/useMyDetails';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
 import { createNewComment } from '../queries/comments';
 import { CommentBatchResponse } from '../types/comment';
+import { Post } from '../types/post';
 import { ActionButton } from './ActionButton';
 import { ProfilePicture } from './ProfilePicture';
-import { Post } from '../types/post';
-import { CONFETTI_DURATION } from '../consts';
 
 type Props = {
     onComment?: () => void;
@@ -100,7 +100,7 @@ export const NewCommentCard = ({ onComment, post }: Props) => {
                 <ProfilePicture
                     profilePictureURL={
                         myDetails?.userResult?.profilePictureURL &&
-                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}`
+                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}?ts=${Date.now()}`
                     }
                     sx={{ marginRight: '2%' }}
                 />

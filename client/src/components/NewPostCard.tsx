@@ -1,14 +1,14 @@
 import { Box, Card, Stack, TextField, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { CONFETTI_DURATION } from '../consts';
 import { useMyDetails } from '../hooks/useMyDetails';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
 import { createNewPost, updatePostImageById } from '../queries/posts';
 import { NewPost, PostBatchResponse } from '../types/post';
 import { ActionButton } from './ActionButton';
-import { ProfilePicture } from './ProfilePicture';
-import { CONFETTI_DURATION } from '../consts';
 import PostImage from './PostImage';
+import { ProfilePicture } from './ProfilePicture';
 
 type NewPostCardProps = {
     onPost?: () => void;
@@ -21,7 +21,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
     const [newPostError, setNewPostError] = useState<string | null>(null);
     const [postTitle, setPostTitle] = useState<string>('');
     const [postContent, setPostContent] = useState<string>('');
-    const [postImage, setPostImage] = useState<File | undefined>();
+    const [postImage, setPostImage] = useState<File | null | undefined>();
 
     const postImageSrc = useMemo(() => {
         if (postImage) {
@@ -59,7 +59,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                                         },
                                     ],
                                     isNew: true,
-									imageURI: postImageSrc
+                                    imageURI: postImageSrc,
                                 },
                                 ...page.posts,
                             ],
@@ -73,12 +73,12 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
             setNewPostError('Something went wrong, please try again');
         },
         onSettled: async (data) => {
-			if (postImage && data?._id) {
+            if (postImage && data?._id) {
                 await updatePostImageById(data._id, postImage);
             }
             setPostContent('');
             setPostTitle('');
-			setPostImage(undefined);
+            setPostImage(undefined);
             setTimeout(() => queryClient.refetchQueries({ queryKey: ['posts'] }), CONFETTI_DURATION);
         },
     });
@@ -112,7 +112,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                 <ProfilePicture
                     profilePictureURL={
                         myDetails?.userResult?.profilePictureURL &&
-                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}`
+                        `${import.meta.env.VITE_SERVER_URL}/${myDetails.userResult.profilePictureURL}?ts=${Date.now()}`
                     }
                     sx={{ marginRight: '2%' }}
                 />
