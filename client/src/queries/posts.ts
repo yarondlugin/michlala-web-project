@@ -18,6 +18,11 @@ export const createNewPost = async (post: NewPost) => {
     return response.data;
 };
 
+export const editPostById = async (post: Pick<Post, '_id' | 'title' | 'content'>) => {
+    const response = await axiosClient.put<Post>(`/posts/${post._id}`, post);
+    return response.data;
+};
+
 export const likePost = async (postId: string) => {
     const response = await axiosClient.put(`/posts/like/${postId}`);
     return response.data;
@@ -25,5 +30,10 @@ export const likePost = async (postId: string) => {
 
 export const unlikePost = async (postId: string) => {
     const response = await axiosClient.put(`/posts/unlike/${postId}`);
+    return response.data;
+};
+
+export const deletePostById = async (postId: string) => {
+    const response = await axiosClient.delete<string>(`/posts/${postId}`);
     return response.data;
 };

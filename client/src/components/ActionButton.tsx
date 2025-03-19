@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button, SxProps, Typography } from '@mui/material';
 import { ReactNode } from 'react';
 import { Variant } from '@mui/material/styles/createTypography';
 
@@ -8,9 +8,10 @@ type Props = {
     onClick?: () => void | Promise<void>;
     hoverColor?: string;
     varaint?: Variant;
+	sx?: SxProps
 };
 
-export const ActionButton = ({ icon, text, hoverColor = 'primary.main', varaint = 'caption', onClick }: Props) => {
+export const ActionButton = ({ icon, text, hoverColor = 'primary.main', varaint = 'caption', onClick, sx }: Props) => {
     return (
         <Button
             startIcon={icon}
@@ -24,6 +25,7 @@ export const ActionButton = ({ icon, text, hoverColor = 'primary.main', varaint 
                     backgroundColor: 'transparent',
                 },
                 transition: 'color 0.2s',
+				...sx
             }}
             onClick={onClick}
         >

@@ -28,6 +28,36 @@ const validatePostId = async (postId: string): Promise<{ isValid: boolean; messa
 	};
 };
 
+const validateCommentUpdate = async (userId: string, commentId: string): Promise<{ isValid: boolean; message: string }> => {
+	if (!isValidObjectId(commentId)) {
+		return {
+			isValid: false,
+			message: `Invalid comment id "${commentId || '(empty)'}"`,
+		};
+	}
+
+	const comment = await commentModel.findById({ _id: commentId });
+
+	if (!comment) {
+		return {
+			isValid: false,
+			message: `Comment with id ${commentId} doesn't exist`,
+		};
+	}
+
+	if (comment.sender !== userId) {
+		return {
+			isValid: false,
+			message: `Unauthorized update`,
+		};
+	}
+
+	return {
+		isValid: true,
+		message: 'valid postId',
+	};
+};
+
 export const createComment = async (request: Request<{}, {}, Comment>, response: Response, next: NextFunction) => {
 	const data = request.body;
 
@@ -130,27 +160,29 @@ export const getCommentById = async (request: Request<{ id: string }>, response:
 	}
 };
 
-export const updateCommentById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
+export const updateCommentById = async (
+	request: Request<{ id: string }, {}, Pick<Comment, 'content'>>,
+	response: Response,
+	next: NextFunction
+) => {
+	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
 	const { id: commentId } = request.params;
-	const { sender, ...data } = request.body;
+	const { content } = request.body;
 
-	if (!isValidObjectId(commentId)) {
-		response.status(httpStatus.BAD_REQUEST).send(`Invalid id "${commentId}"`);
-		return;
-	}
-	if (Object.keys(data || {}).length === 0) {
-		response.status(httpStatus.BAD_REQUEST).send('No update fields provided');
+	if (!content) {
+		response.status(httpStatus.BAD_REQUEST).send('Content not provided');
 		return;
 	}
 
 	try {
-		const updateResponse = await commentModel.updateOne({ _id: commentId }, data);
+		const { isValid, message } = await validateCommentUpdate(userId, commentId);
 
-		if (updateResponse.matchedCount === 0) {
-			response.status(httpStatus.NOT_FOUND).send(`Comment with id ${commentId} not found`);
+		if (!isValid) {
+			response.status(httpStatus.BAD_REQUEST).send(message);
 			return;
 		}
 
+		await commentModel.updateOne({ _id: commentId }, { content });
 		response.status(httpStatus.OK).send(`Comment ${commentId} updated`);
 	} catch (error) {
 		next(error);
@@ -158,19 +190,18 @@ export const updateCommentById = async (request: Request<{ id: string }>, respon
 };
 
 export const deleteCommentById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
+	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
 	const { id: commentId } = request.params;
 
-	if (!isValidObjectId(commentId)) {
-		response.status(httpStatus.BAD_REQUEST).send(`Invalid id "${commentId}"`);
-		return;
-	}
-
 	try {
-		const deleteResponse = await commentModel.findByIdAndDelete({ _id: commentId });
-		if (deleteResponse === null) {
-			response.status(httpStatus.NOT_FOUND).send(`Comment with id ${commentId} not found`);
+		const { isValid, message } = await validateCommentUpdate(userId, commentId);
+
+		if (!isValid) {
+			response.status(httpStatus.BAD_REQUEST).send(message);
 			return;
 		}
+
+		await commentModel.findByIdAndDelete({ _id: commentId });
 		response.status(httpStatus.OK).send(`comment ${commentId} deleted`);
 	} catch (error) {
 		next(error);

@@ -27,10 +27,10 @@ export const NewCommentCard = ({ onComment, post }: Props) => {
         mutationFn: (content: string) => createNewComment({ content, postId: post._id }),
         onMutate: async (content) => {
             onComment?.();
-            await queryClient.cancelQueries({ queryKey: ['comments', post] });
+            await queryClient.cancelQueries({ queryKey: ['comments', post._id] });
             await queryClient.cancelQueries({ queryKey: ['post', post._id] });
 
-            queryClient.setQueryData(['comments', post], (oldData: InfiniteData<CommentBatchResponse, unknown>) => {
+            queryClient.setQueryData(['comments', post._id], (oldData: InfiniteData<CommentBatchResponse, unknown>) => {
                 return {
                     ...oldData,
                     pages: oldData.pages?.map((page, index) => {
@@ -68,7 +68,7 @@ export const NewCommentCard = ({ onComment, post }: Props) => {
         onSettled: () => {
             setCommentContent('');
             setTimeout(() => {
-                queryClient.refetchQueries({ queryKey: ['comments', post] });
+                queryClient.refetchQueries({ queryKey: ['comments', post._id] });
                 queryClient.refetchQueries({ queryKey: ['post', post._id] });
             }, CONFETTI_DURATION);
         },
