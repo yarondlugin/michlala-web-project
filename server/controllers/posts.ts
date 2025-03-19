@@ -6,6 +6,9 @@ import { Post, postModel } from '../models/posts';
 import { User } from '../models/users';
 import { appConfig } from '../utils/appConfig';
 import { AddUserIdToRequest } from '../utils/types';
+import multer from 'multer';
+import path from 'path';
+import { NOT_AN_IMAGE_ERROR } from '../utils/createErrorHandler';
 
 const validatePostUpdate = async (
 	userId: string,
@@ -257,6 +260,55 @@ export const deletePostById = async (request: Request<{ id: string }>, response:
 		await commentModel.deleteMany({ postId });
 		await postModel.findByIdAndDelete({ _id: postId });
 		response.status(httpStatus.OK).send(`Post ${postId} deleted`);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const uploadPostImage = multer({
+	storage: multer.diskStorage({
+		destination: 'public/postsImages/',
+		filename: (request, file, callback) => {
+			const { id: postId } = request.params;
+			const ext = path.extname(file.originalname);
+			callback(null, `${postId}${Date.now()}${ext}`);
+		},
+	}),
+	fileFilter: (_request, file, callback) => {
+		if (!path.extname(file.originalname).match(/^\.(jpg|jpeg|png)$/)) {
+			return callback(new Error(NOT_AN_IMAGE_ERROR));
+		}
+		callback(null, true);
+	},
+});
+
+export const updatePostImageById = async (
+	request: Request<{ id: string }, Express.Multer.File>,
+	response: Response,
+	next: NextFunction
+) => {
+	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
+	const { id: postId } = request.params;
+	const postImage = request.file;
+
+	if (!postImage) {
+		response.status(httpStatus.BAD_REQUEST).send('No image provided');
+		return;
+	}
+
+	try {
+		const { isValid, message, status } = await validatePostUpdate(userId, postId);
+
+		if (!isValid) {
+			response.status(status).send(message);
+			return;
+		}
+
+		await postModel.findByIdAndUpdate(userId, {
+			imageURI: `${postImage.destination}${postImage.filename}`,
+		});
+
+		response.status(httpStatus.OK).send(`Post ${postId} updated`);
 	} catch (error) {
 		next(error);
 	}

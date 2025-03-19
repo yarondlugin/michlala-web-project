@@ -19,6 +19,10 @@ const postSchemaDefinition = {
 		type: [String],
 		default: [],
 	},
+	imageURI: {
+		type: String,
+		allowFilter: false,
+	},
 } as const;
 
 const postSchema = new Schema(postSchemaDefinition);

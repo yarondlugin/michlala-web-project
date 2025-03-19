@@ -72,7 +72,7 @@ export const updateUserById = async (request: Request<{ id: string }>, response:
 	}
 };
 
-export const updateUserProfilePictureById = async (request: Request<{ id: string }>, response: Response, next: NextFunction) => {
+export const updateUserProfilePictureById = async (request: Request<{ id: string }, {} ,Express.Multer.File>, response: Response, next: NextFunction) => {
 	const { id: userId } = request.params;
 	const newProfilePicture = request.file;
 
