@@ -6,7 +6,7 @@ import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import EditIcon from '@mui/icons-material/Edit';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Box, Card, IconButton, Modal, Stack, SxProps, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Card, IconButton, Stack, SxProps, TextField, Tooltip, Typography } from '@mui/material';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +17,7 @@ import { useRestrictedPage } from '../hooks/useRestrictedPage';
 import { deletePostById, editPostById } from '../queries/posts';
 import { Post, PostBatchResponse } from '../types/post';
 import { ActionButton } from './ActionButton';
+import { DeletionModal } from './DeletionModal';
 import { ProfilePicture } from './ProfilePicture';
 
 type Props = {
@@ -226,6 +227,7 @@ export const PostCard = ({
                         </Tooltip>
                     )}
                     {isEditable &&
+                        !isNew &&
                         (isEditMode ? (
                             <Stack direction='row' sx={{ justifyContent: 'space-around', marginLeft: 'auto' }}>
                                 <IconButton onClick={handleExitEditMode} sx={{ height: 'fit-content' }}>
@@ -245,7 +247,6 @@ export const PostCard = ({
                                 </IconButton>
                             </Stack>
                         ))}
-                    {}
                 </Box>
 
                 {/* Content section */}
@@ -286,46 +287,14 @@ export const PostCard = ({
                 )}
 
                 {/* Deletion modal */}
-                <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} disableScrollLock>
-                    <Card
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: 'min(500px, 50vw)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            padding: 2,
-                            borderRadius: 3,
-                            boxShadow: 1,
-                        }}
-                    >
-                        <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: 2 }}>
-                            Delete this thought?
-                        </Typography>
-                        <Typography variant='body1' sx={{ marginBottom: 2 }}>
-                            This cannot be undone, comments will be deleted as well.
-                        </Typography>
-                        <Typography variant='body1' sx={{ fontStyle: 'italic', marginBottom: 2 }}>
-                            "{title}"
-                        </Typography>
-                        <Stack direction='row' sx={{ justifyContent: 'space-around' }}>
-                            <ActionButton
-                                text='Yes, delete'
-                                icon={<CheckIcon />}
-                                hoverColor='error.main'
-                                onClick={() => deletePost(postId)}
-                            />
-                            <ActionButton
-                                text='No, cancel'
-                                hoverColor='text.primary'
-                                onClick={() => setIsDeleteModalOpen(false)}
-                                icon={<DoDisturbIcon />}
-                            />
-                        </Stack>
-                    </Card>
-                </Modal>
+                <DeletionModal
+                    isOpen={isDeleteModalOpen}
+                    title='Delete this thought?'
+                    description='This cannot be undone, comments will be deleted as well.'
+                    note={`"${title}"`}
+                    onConfirm={() => deletePost(postId)}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                />
             </Card>
         </>
     );

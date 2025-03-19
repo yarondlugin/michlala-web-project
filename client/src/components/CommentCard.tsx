@@ -1,20 +1,17 @@
-import { Box, Card, SxProps, Typography } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DoDisturbIcon from '@mui/icons-material/DoDisturb';
+import EditIcon from '@mui/icons-material/Edit';
+import { Box, Card, IconButton, Stack, SxProps, TextField, Typography } from '@mui/material';
+import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ConfettiEffect from 'react-confetti';
-import { Comment } from '../types/comment';
-import { ProfilePicture } from './ProfilePicture';
 import { CONFETTI_DURATION } from '../consts';
-import { IconButton } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteCommentById, editCommentById } from '../queries/comments';
-import { CommentBatchResponse } from '../types/comment';
-import { TextField, Modal, Stack } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import DoDisturbIcon from '@mui/icons-material/DoDisturb';
-import { ActionButton } from './ActionButton';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
+import { deleteCommentById, editCommentById } from '../queries/comments';
+import { Comment, CommentBatchResponse } from '../types/comment';
+import { DeletionModal } from './DeletionModal';
+import { ProfilePicture } from './ProfilePicture';
 
 type Props = {
     comment: Comment;
@@ -188,7 +185,7 @@ export const CommentCard = ({ comment: { _id: commentId, content, isNew, senderD
                 </Box>
 
                 {/* Action buttons section */}
-                {isEditable && (
+                {isEditable && !isNew && (
                     <Stack direction='row' sx={{ justifyContent: 'space-around', marginLeft: 'auto' }}>
                         {isEditMode ? (
                             <>
@@ -213,43 +210,13 @@ export const CommentCard = ({ comment: { _id: commentId, content, isNew, senderD
                 )}
 
                 {/* Deletion modal */}
-                <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} disableScrollLock>
-                    <Card
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: 'min(500px, 50vw)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            padding: 2,
-                            borderRadius: 3,
-                            boxShadow: 1,
-                        }}
-                    >
-                        <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: 2 }}>
-                            Delete this comment?
-                        </Typography>
-                        <Typography variant='body1' sx={{ marginBottom: 2 }}>
-                            This cannot be undone.
-                        </Typography>
-                        <Stack direction='row' sx={{ justifyContent: 'space-around' }}>
-                            <ActionButton
-                                text='Yes, delete'
-                                icon={<CheckIcon />}
-                                hoverColor='error.main'
-                                onClick={() => deleteComment(commentId)}
-                            />
-                            <ActionButton
-                                text='No, cancel'
-                                hoverColor='text.primary'
-                                onClick={() => setIsDeleteModalOpen(false)}
-                                icon={<DoDisturbIcon />}
-                            />
-                        </Stack>
-                    </Card>
-                </Modal>
+                <DeletionModal
+                    isOpen={isDeleteModalOpen}
+                    title='Delete this comment?'
+                    description='This cannot be undone.'
+                    onConfirm={() => deleteComment(commentId)}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                />
             </Card>
         </>
     );
