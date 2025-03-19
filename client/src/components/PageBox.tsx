@@ -14,7 +14,7 @@ export const PageBox = ({ children, sx }: Props) => {
                 flexDirection: 'column',
                 minHeight: '90vh',
                 width: '100%',
-                paddingTop: '1%',
+                paddingY: '1%',
                 placeItems: 'center',
                 ...sx,
             }}

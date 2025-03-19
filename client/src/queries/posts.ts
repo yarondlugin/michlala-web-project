@@ -18,7 +18,7 @@ export const createNewPost = async (post: NewPost) => {
     return response.data;
 };
 
-export const editPostById = async (post: Post) => {
+export const editPostById = async (post: Pick<Post, '_id' | 'title' | 'content'>) => {
     const response = await axiosClient.put<Post>(`/posts/${post._id}`, post);
     return response.data;
 };

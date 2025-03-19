@@ -65,7 +65,7 @@ export const PostCard = ({
     const queryClient = useQueryClient();
     const { mutate: editPost } = useMutation({
         mutationKey: ['editPost', postId],
-        mutationFn: (post: Post) => editPostById(post),
+        mutationFn: (post: Pick<Post, '_id' | 'title' | 'content'>) => editPostById(post),
         onMutate: async (editedPost) => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
             await queryClient.cancelQueries({ queryKey: ['post', postId] });
@@ -117,14 +117,8 @@ export const PostCard = ({
 
         editPost({
             _id: postId,
-            sender,
             title: editedTitle,
             content: editedContent,
-            commentsCount,
-            isAI,
-            isNew,
-            likedUsers,
-            senderDetails,
         });
     };
 
@@ -222,7 +216,7 @@ export const PostCard = ({
                         )}
                         {!isAI && !isEditMode && (
                             <Typography variant='body2' sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
-                                @{senderDetails?.[0]?.username || sender}
+                                @{senderDetails?.[0]?.username || 'username'}
                             </Typography>
                         )}
                     </Stack>

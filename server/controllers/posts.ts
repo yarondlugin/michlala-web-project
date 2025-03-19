@@ -173,10 +173,14 @@ export const getPostById = async (request: Request<{ id: string }>, response: Re
 	}
 };
 
-export const updatePostById = async (request: Request<{ id: string }, {}, Post>, response: Response, next: NextFunction) => {
+export const updatePostById = async (
+	request: Request<{ id: string }, {}, Pick<Post, 'title' | 'content'>>,
+	response: Response,
+	next: NextFunction
+) => {
 	const { userId } = request as AddUserIdToRequest<Request<{ id: string }>>;
 	const { id: postId } = request.params;
-	const { _id, sender, ...updatedPost } = request.body;
+	const { title, content } = request.body;
 
 	try {
 		const { isValid, message } = await validatePostUpdate(userId, postId);
@@ -186,7 +190,7 @@ export const updatePostById = async (request: Request<{ id: string }, {}, Post>,
 			return;
 		}
 
-		await postModel.updateOne({ _id: postId }, updatedPost);
+		await postModel.updateOne({ _id: postId }, { title, content });
 
 		response.status(httpStatus.OK).send('Updated successfully');
 	} catch (error) {

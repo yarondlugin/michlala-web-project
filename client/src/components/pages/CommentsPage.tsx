@@ -45,7 +45,7 @@ export const CommentsPage = ({ postId }: Props) => {
         (string | {} | undefined)[],
         string | undefined
     >({
-        queryKey: ['comments', post],
+        queryKey: ['comments', postId],
         queryFn: ({ pageParam = '' }) => fetchCommentsBatch(post?._id ?? '', import.meta.env.VITE_COMMENTS_PER_PAGE, pageParam),
         getNextPageParam: (lastPage) => (lastPage?.hasMore ? lastPage.lastId : undefined),
         initialPageParam: undefined,
