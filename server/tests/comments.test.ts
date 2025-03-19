@@ -53,14 +53,6 @@ describe('Comments API', () => {
 			commentId = response.body._id;
 		});
 
-		it('should get all comments', async () => {
-			const response = await request(app).get('/comments').set(getAuthorizationHeader()).expect(httpStatus.OK);
-
-			expect(Array.isArray(response.body)).toBe(true);
-			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.find(({ _id, sender }: Comment) => _id.toString() === commentId && sender === userId)).toBeDefined();
-		});
-
 		it('should get a comment by id', async () => {
 			const response = await request(app).get(`/comments/${commentId}`).set(getAuthorizationHeader()).expect(httpStatus.OK);
 
@@ -92,31 +84,20 @@ describe('Comments API', () => {
 			const response = await request(app)
 				.get('/comments')
 				.set(getAuthorizationHeader())
-				.query({ sender: userId })
+				.query({ postId, sender: userId })
 				.expect(httpStatus.OK);
 
-			expect(Array.isArray(response.body)).toBe(true);
-			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.every(({ sender }: Comment) => sender === userId)).toBe(true);
+			expect(Array.isArray(response.body.comments)).toBe(true);
+			expect(response.body.comments.length).toBeGreaterThan(0);
+			expect(response.body.comments.every(({ sender }: Comment) => sender === userId)).toBe(true);
 		});
 
 		it('should filter comments by post id', async () => {
 			const response = await request(app).get('/comments').set(getAuthorizationHeader()).query({ postId }).expect(httpStatus.OK);
 
-			expect(Array.isArray(response.body)).toBe(true);
-			expect(response.body.length).toBeGreaterThan(0);
-			expect(response.body.every(({ postId: id }: Comment) => (id as unknown as string) === postId)).toBe(true);
-		});
-
-		it('should filter comments by non-existent post id', async () => {
-			const nonExistentPostId = '6740bcfcaa86a22352cb55e3';
-			const response = await request(app)
-				.get('/comments')
-				.set(getAuthorizationHeader())
-				.query({ postId: nonExistentPostId })
-				.expect(httpStatus.OK);
-
-			expect(response.body).toEqual([]);
+			expect(Array.isArray(response.body.comments)).toBe(true);
+			expect(response.body.comments.length).toBeGreaterThan(0);
+			expect(response.body.comments.every(({ postId: id }: Comment) => (id as unknown as string) === postId)).toBe(true);
 		});
 
 		it('should delete a comment by id', async () => {
@@ -129,6 +110,11 @@ describe('Comments API', () => {
 	});
 
 	describe('Negative tests', () => {
+		it('should return 400 for invalid post id', async () => {
+			const invalidId = 'invalid-id';
+			await request(app).get(`/comments/?postId=${invalidId}`).set(getAuthorizationHeader()).expect(httpStatus.BAD_REQUEST);
+		});
+
 		it('should return 400 for invalid comment id', async () => {
 			const invalidId = 'invalid-id';
 			await request(app).get(`/comments/${invalidId}`).set(getAuthorizationHeader()).expect(httpStatus.BAD_REQUEST);
@@ -162,6 +148,17 @@ describe('Comments API', () => {
 			expect(response.text).toBe('Invalid post id "invalid-post-id"');
 		});
 
+		it('should return 400 for getting comments with non existing post id filter', async () => {
+			const nonExistentPostId = '6740bcfcaa86a22352cb55e3';
+			const response = await request(app)
+				.get('/comments')
+				.set(getAuthorizationHeader())
+				.query({ postId: nonExistentPostId })
+				.expect(httpStatus.BAD_REQUEST);
+
+			expect(response.text).toBe(`Post with id ${nonExistentPostId} doesn't exist`);
+		});
+
 		it('should return 400 for updating a comment with invalid id', async () => {
 			const response = await request(app)
 				.put('/comments/invalid-id')
@@ -171,7 +168,7 @@ describe('Comments API', () => {
 				})
 				.expect(httpStatus.BAD_REQUEST);
 
-			expect(response.text).toBe('Invalid id "invalid-id"');
+			expect(response.text).toBe('Invalid comment id "invalid-id"');
 		});
 
 		it('should return 400 for deleting a comment with invalid id', async () => {
@@ -180,7 +177,7 @@ describe('Comments API', () => {
 				.set(getAuthorizationHeader())
 				.expect(httpStatus.BAD_REQUEST);
 
-			expect(response.text).toBe('Invalid id "invalid-id"');
+			expect(response.text).toBe('Invalid comment id "invalid-id"');
 		});
 
 		it('should return 400 for creating a comment with non-existing post id', async () => {

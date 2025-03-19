@@ -1,21 +1,22 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { FilterQuery, isValidObjectId, Types } from 'mongoose';
+import { commentModel } from '../models/comments';
 import { Post, postModel } from '../models/posts';
 import { User } from '../models/users';
 import { appConfig } from '../utils/appConfig';
 import { AddUserIdToRequest } from '../utils/types';
-import { commentModel } from '../models/comments';
 
 const validatePostUpdate = async (
 	userId: string,
 	postId: string,
 	skipAuthCheck?: boolean
-): Promise<{ isValid: boolean; message: string }> => {
+): Promise<{ isValid: boolean; message: string; status: number }> => {
 	if (!isValidObjectId(postId)) {
 		return {
 			isValid: false,
 			message: `Invalid post id "${postId || '(empty)'}"`,
+			status: httpStatus.BAD_REQUEST,
 		};
 	}
 
@@ -25,6 +26,7 @@ const validatePostUpdate = async (
 		return {
 			isValid: false,
 			message: `Post with id ${postId} doesn't exist`,
+			status: httpStatus.NOT_FOUND,
 		};
 	}
 
@@ -32,12 +34,14 @@ const validatePostUpdate = async (
 		return {
 			isValid: false,
 			message: `Unauthorized update`,
+			status: httpStatus.UNAUTHORIZED,
 		};
 	}
 
 	return {
 		isValid: true,
 		message: 'valid postId',
+		status: httpStatus.OK,
 	};
 };
 
@@ -183,10 +187,10 @@ export const updatePostById = async (
 	const { title, content } = request.body;
 
 	try {
-		const { isValid, message } = await validatePostUpdate(userId, postId);
+		const { isValid, message, status } = await validatePostUpdate(userId, postId);
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 
@@ -203,10 +207,10 @@ export const likePostById = async (request: Request<{ id: string }>, response: R
 	const { id: postId } = request.params;
 
 	try {
-		const { isValid, message } = await validatePostUpdate(userId, postId, true);
+		const { isValid, message, status } = await validatePostUpdate(userId, postId, true);
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 
@@ -223,10 +227,10 @@ export const unlikePostById = async (request: Request<{ id: string }>, response:
 	const { id: postId } = request.params;
 
 	try {
-		const { isValid, message } = await validatePostUpdate(userId, postId, true);
+		const { isValid, message, status } = await validatePostUpdate(userId, postId, true);
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 
@@ -243,10 +247,10 @@ export const deletePostById = async (request: Request<{ id: string }>, response:
 	const { id: postId } = request.params;
 
 	try {
-		const { isValid, message } = await validatePostUpdate(userId, postId);
+		const { isValid, message, status } = await validatePostUpdate(userId, postId);
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 

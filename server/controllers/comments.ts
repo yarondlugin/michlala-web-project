@@ -6,11 +6,12 @@ import { postModel } from '../models/posts';
 import { appConfig } from '../utils/appConfig';
 import { AddUserIdToRequest } from '../utils/types';
 
-const validatePostId = async (postId: string): Promise<{ isValid: boolean; message: string }> => {
+const validatePostId = async (postId: string): Promise<{ isValid: boolean; message: string, status: number }> => {
 	if (!postId || !isValidObjectId(postId)) {
 		return {
 			isValid: false,
 			message: `Invalid post id "${postId || '(empty)'}"`,
+			status: httpStatus.BAD_REQUEST
 		};
 	}
 
@@ -19,20 +20,23 @@ const validatePostId = async (postId: string): Promise<{ isValid: boolean; messa
 		return {
 			isValid: false,
 			message: `Post with id ${postId} doesn't exist`,
+			status: httpStatus.BAD_REQUEST
 		};
 	}
 
 	return {
 		isValid: true,
 		message: 'valid postId',
+		status: httpStatus.OK
 	};
 };
 
-const validateCommentUpdate = async (userId: string, commentId: string): Promise<{ isValid: boolean; message: string }> => {
+const validateCommentUpdate = async (userId: string, commentId: string): Promise<{ isValid: boolean; message: string, status: number }> => {
 	if (!isValidObjectId(commentId)) {
 		return {
 			isValid: false,
 			message: `Invalid comment id "${commentId || '(empty)'}"`,
+			status: httpStatus.BAD_REQUEST
 		};
 	}
 
@@ -42,6 +46,7 @@ const validateCommentUpdate = async (userId: string, commentId: string): Promise
 		return {
 			isValid: false,
 			message: `Comment with id ${commentId} doesn't exist`,
+			status: httpStatus.NOT_FOUND
 		};
 	}
 
@@ -49,16 +54,18 @@ const validateCommentUpdate = async (userId: string, commentId: string): Promise
 		return {
 			isValid: false,
 			message: `Unauthorized update`,
+			status: httpStatus.UNAUTHORIZED
 		};
 	}
 
 	return {
 		isValid: true,
 		message: 'valid postId',
+		status: httpStatus.OK
 	};
 };
 
-export const createComment = async (request: Request<{}, {}, Comment>, response: Response, next: NextFunction) => {
+export const createComment = async (request: Request<{}, {}, Partial<Comment>>, response: Response, next: NextFunction) => {
 	const data = request.body;
 
 	const { postId } = data;
@@ -69,10 +76,10 @@ export const createComment = async (request: Request<{}, {}, Comment>, response:
 	}
 
 	try {
-		const { isValid, message } = await validatePostId(postId.toString());
+		const { isValid, message, status } = await validatePostId(postId?.toString() ?? '');
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 
@@ -92,20 +99,19 @@ export const getAllComments = async (
 	next: NextFunction
 ) => {
 	const { maxCommentsBatch } = appConfig;
-
+	
 	const { postId, limit: limitParam, lastId } = request.query;
 	const limit = Math.min(Number(limitParam) || maxCommentsBatch, maxCommentsBatch);
-
-	const lastIdFilter: FilterQuery<Comment> = !!lastId ? { _id: { $lt: new Types.ObjectId(lastId) } } : {};
-	const query: FilterQuery<Comment> = { ...lastIdFilter, postId: new Types.ObjectId(postId) };
-
 	try {
-		const { isValid, message } = await validatePostId(postId);
-
+		const { isValid, message, status } = await validatePostId(postId);
+		
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
+		
+		const lastIdFilter: FilterQuery<Comment> = !!lastId ? { _id: { $lt: new Types.ObjectId(lastId) } } : {};
+		const query: FilterQuery<Comment> = { ...lastIdFilter, postId: new Types.ObjectId(postId) };
 
 		const comments = await commentModel.aggregate([
 			{ $match: query },
@@ -175,10 +181,10 @@ export const updateCommentById = async (
 	}
 
 	try {
-		const { isValid, message } = await validateCommentUpdate(userId, commentId);
+		const { isValid, message, status } = await validateCommentUpdate(userId, commentId);
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 
@@ -194,10 +200,10 @@ export const deleteCommentById = async (request: Request<{ id: string }>, respon
 	const { id: commentId } = request.params;
 
 	try {
-		const { isValid, message } = await validateCommentUpdate(userId, commentId);
+		const { isValid, message, status } = await validateCommentUpdate(userId, commentId);
 
 		if (!isValid) {
-			response.status(httpStatus.BAD_REQUEST).send(message);
+			response.status(status).send(message);
 			return;
 		}
 
