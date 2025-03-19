@@ -12,6 +12,7 @@ export const useLikePost = (postId: string) => {
         mutationFn: async () => await likePost(postId),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
+			await queryClient.cancelQueries({ queryKey: ['post', postId] });
 
             queryClient.setQueryData(['posts'], (oldData: InfiniteData<PostBatchResponse, unknown>) => {
                 if (!oldData) {
@@ -42,7 +43,10 @@ export const useLikePost = (postId: string) => {
                 };
             });
         },
-        onSuccess: () => queryClient.refetchQueries({ queryKey: ['posts'] }),
+        onSuccess: () => {
+            queryClient.refetchQueries({ queryKey: ['posts'] });
+            queryClient.refetchQueries({ queryKey: ['post', postId] });
+        },
     });
 
     const { mutate: unlike } = useMutation({
@@ -50,6 +54,7 @@ export const useLikePost = (postId: string) => {
         mutationFn: async () => await unlikePost(postId),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: ['posts'] });
+            await queryClient.cancelQueries({ queryKey: ['post', postId] });
 
             queryClient.setQueryData(['posts'], (oldData: InfiniteData<PostBatchResponse, unknown>) => {
                 if (!oldData) {
@@ -80,7 +85,10 @@ export const useLikePost = (postId: string) => {
                 };
             });
         },
-        onSuccess: () => queryClient.refetchQueries({ queryKey: ['posts'] }),
+        onSuccess: () => {
+            queryClient.refetchQueries({ queryKey: ['posts'] });
+            queryClient.refetchQueries({ queryKey: ['post', postId] });
+        },
     });
 
     return { like, unlike };

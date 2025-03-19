@@ -3,44 +3,47 @@ import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query
 import { useState } from 'react';
 import { useMyDetails } from '../hooks/useMyDetails';
 import { useRestrictedPage } from '../hooks/useRestrictedPage';
-import { createNewPost } from '../queries/posts';
-import { NewPost, PostBatchResponse } from '../types/post';
+import { createNewComment } from '../queries/comments';
+import { CommentBatchResponse } from '../types/comment';
 import { ActionButton } from './ActionButton';
 import { ProfilePicture } from './ProfilePicture';
+import { Post } from '../types/post';
 import { CONFETTI_DURATION } from '../consts';
 
-type NewPostCardProps = {
-    onPost?: () => void;
+type Props = {
+    onComment?: () => void;
+    post: Post;
 };
 
-export const NewPostCard = ({ onPost }: NewPostCardProps) => {
+export const NewCommentCard = ({ onComment, post }: Props) => {
     const cookieDetails = useRestrictedPage();
     const myDetails = useMyDetails(cookieDetails?.userId);
 
-    const [newPostError, setNewPostError] = useState<string | null>(null);
-    const [postTitle, setPostTitle] = useState<string>('');
-    const [postContent, setPostContent] = useState<string>('');
+    const [newCommentError, setNewCommentError] = useState<string | null>(null);
+    const [commentContent, setCommentContent] = useState<string>('');
     const queryClient = useQueryClient();
-    const { mutate: createPost } = useMutation({
-        mutationKey: ['newPost'],
-        mutationFn: (post: NewPost) => createNewPost(post),
-        onMutate: async (newPost) => {
-            onPost?.();
-            await queryClient.cancelQueries({ queryKey: ['posts'] });
+    const { mutate: createComment } = useMutation({
+        mutationKey: ['newComment'],
+        mutationFn: (content: string) => createNewComment({ content, postId: post._id }),
+        onMutate: async (content) => {
+            onComment?.();
+            await queryClient.cancelQueries({ queryKey: ['comments', post._id] });
+            await queryClient.cancelQueries({ queryKey: ['post', post._id] });
 
-            queryClient.setQueryData(['posts'], (oldData: InfiniteData<PostBatchResponse, unknown>) => {
+            queryClient.setQueryData(['comments', post._id], (oldData: InfiniteData<CommentBatchResponse, unknown>) => {
                 return {
                     ...oldData,
-                    pages: oldData.pages.map((page, index) => {
+                    pages: oldData.pages?.map((page, index) => {
                         if (index !== 0) {
                             return page;
                         }
 
                         return {
                             ...page,
-                            posts: [
+                            comments: [
                                 {
-                                    ...newPost,
+                                    content,
+                                    postId: post._id,
                                     _id: new Date().getTime().toString(),
                                     sender: cookieDetails?.userId,
                                     senderDetails: [
@@ -51,7 +54,7 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                                     ],
                                     isNew: true,
                                 },
-                                ...page.posts,
+                                ...page.comments,
                             ],
                         };
                     }),
@@ -60,26 +63,25 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
         },
         onError: (error) => {
             console.error(error);
-            setNewPostError('Something went wrong, please try again');
+            setNewCommentError('Something went wrong, please try again');
         },
         onSettled: () => {
-            setPostContent('');
-            setPostTitle('');
-            setTimeout(() => queryClient.refetchQueries({ queryKey: ['posts'] }), CONFETTI_DURATION);
+            setCommentContent('');
+            setTimeout(() => {
+                queryClient.refetchQueries({ queryKey: ['comments', post._id] });
+                queryClient.refetchQueries({ queryKey: ['post', post._id] });
+            }, CONFETTI_DURATION);
         },
     });
 
-    const handlePost = () => {
-        if (postTitle.length === 0) {
-            setNewPostError("Title can't be empty");
+    const handleComment = () => {
+        if (commentContent.length === 0) {
+            setNewCommentError("Comment can't be empty");
             return;
         }
-        setNewPostError(null);
+        setNewCommentError(null);
 
-        createPost({
-            title: postTitle,
-            content: postContent,
-        });
+        createComment(commentContent);
     };
 
     return (
@@ -104,34 +106,26 @@ export const NewPostCard = ({ onPost }: NewPostCardProps) => {
                 />
                 <Box display={'flex'} flexDirection={'column'} width={'100%'}>
                     <TextField
+                        multiline={true}
+                        minRows={3}
                         sx={{ width: '100%' }}
-                        placeholder='What shower thought did you have today?'
-                        error={!!newPostError}
-                        value={postTitle}
+                        placeholder={`What do you think about ${
+                            post.senderDetails?.[0]?.username ? post.senderDetails?.[0]?.username + "'s" : 'this'
+                        } thought?`}
+                        value={commentContent}
                         onChange={(e) => {
-                            setPostTitle(e.target.value);
-                            setNewPostError(null);
+                            setCommentContent(e.target.value);
+                            setNewCommentError(null);
                         }}
                     />
                     <Typography variant='body2' color='error'>
-                        {newPostError ?? '‎' /*Invisible character so the error message is always rendered*/}
+                        {newCommentError ?? '‎' /*Invisible character so the error message is always rendered*/}
                     </Typography>
-                    <TextField
-                        multiline={true}
-                        minRows={3}
-                        sx={{ width: '100%', marginTop: 2 }}
-                        placeholder='Care to elaborate? (optional)'
-                        value={postContent}
-                        onChange={(e) => {
-                            setPostContent(e.target.value);
-                            setNewPostError(null);
-                        }}
-                    />
                 </Box>
             </Box>
 
             <Stack direction='row' sx={{ justifyContent: 'flex-end', marginTop: 2 }}>
-                <ActionButton varaint='button' text='Post' onClick={handlePost} />
+                <ActionButton varaint='button' text='Reply' onClick={handleComment} />
             </Stack>
         </Card>
     );

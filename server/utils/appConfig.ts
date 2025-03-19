@@ -29,4 +29,5 @@ export const appConfig = {
 		schedule: process.env.POST_GENERATION_SCHEDULE || '29 1 * * *',
 	},
 	maxPostsBatch: Number(process.env.MAX_POSTS_BATCH) || 20,
+	maxCommentsBatch: Number(process.env.MAX_COMMENTS_BATCH) || 20,
 } as const;

@@ -11,6 +11,7 @@ import { updateUserById, updateUserProfilePictureById } from '../../queries/user
 import { EditUser, User } from '../../types/user';
 import { PageBox } from '../PageBox';
 import { PageTitle } from '../PageTitle';
+import { PostsFeed } from '../PostsFeed';
 import { ProfileField } from '../ProfileField';
 import { ProfilePicture } from '../ProfilePicture';
 
@@ -184,6 +185,7 @@ export const ProfilePage = ({ userId, isEditable }: ProfilePageParams) => {
                 </Box>
             )}
             {showProfilePictureModal}
+			<PostsFeed title='My Thoughts' filterSender={userId} />
         </PageBox>
     );
 };
