@@ -304,7 +304,7 @@ export const updatePostImageById = async (
 			return;
 		}
 
-		await postModel.findByIdAndUpdate(userId, {
+		await postModel.findByIdAndUpdate(postId, {
 			imageURI: `${postImage.destination}${postImage.filename}`,
 		});
 
